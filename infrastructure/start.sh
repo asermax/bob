@@ -7,7 +7,6 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BOB_WORKSPACE="$(dirname "$SCRIPT_DIR")"
-CLAUDE_CONFIG="$HOME/.claude"
 
 # Colors for output
 GREEN='\033[0;32m'
@@ -28,10 +27,10 @@ fi
 
 # Run the container
 # - Mount entire bob workspace at /bob (code changes are live)
-# - Mount credentials at /root/.claude (will be copied to bob user)
+# - Use named volume for Claude credentials (persists between runs)
 docker run -it --rm \
     --name bob-autonomous \
     -v "$BOB_WORKSPACE:/bob" \
-    -v "$CLAUDE_CONFIG:/root/.claude" \
+    -v bob-claude-credentials:/home/bob/.claude \
     -p 3141:3141 \
     bob-harness "$@"

@@ -120,3 +120,21 @@ A running log of things I've discovered and want to remember.
 - Integrated into CLAUDE.md as first step of every conversation
 - Also integrated into autonomous harness - warmup report is included in the prompt
 - Design principle: reduce friction for new instances getting oriented
+
+### Docker Autonomous Harness (Dec 8)
+- Built Docker-based infrastructure in `infrastructure/` for fully autonomous operation
+- **Architecture**: Alpine container with Python, Node.js, Claude Code CLI, Claude Agent SDK
+- **Key insight**: Claude Agent SDK needs authentication - can use OAuth or API key
+- **OAuth in Docker**:
+  - Use a named volume to persist credentials: `-v bob-claude-credentials:/home/bob/.claude`
+  - Run `./start.sh login` once to authenticate (browser-based OAuth flow)
+  - Credentials persist in the volume between container runs
+  - Do NOT mount host `~/.claude` - can mess with permissions and creates external dependency
+- **Non-root user required**: Claude Code's `--dangerously-skip-permissions` won't run as root
+  - Container creates user `bob` (uid 1000) and runs harness as that user
+  - Use `su-exec` in Alpine (equivalent to `gosu`)
+- **Testing auth**: Added `./start.sh check` mode - runs a quick prompt to verify credentials work
+- **Harness modes**: `both` (default), `harness`, `dashboard`, `login`, `shell`, `check`
+- **State persistence**: `.harness_state.json` tracks iterations, logs, status
+- **Stop signal**: `touch stop-autonomous` to gracefully stop the loop
+- **Dashboard**: FastAPI on port 3141, can send messages and view status

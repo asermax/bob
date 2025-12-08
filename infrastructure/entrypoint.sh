@@ -4,18 +4,15 @@
 # =============================================================================
 # Runs harness as non-root user 'bob' to allow --dangerously-skip-permissions.
 # Harness and dashboard code are mounted from /bob/infrastructure/
+# Credentials persist in named volume at /home/bob/.claude
 # =============================================================================
 
 set -e
 
 MODE="${1:-both}"
 
-# Copy credentials to bob's home (including hidden files)
-if [ -d "/root/.claude" ]; then
-    mkdir -p /home/bob/.claude
-    cp -a /root/.claude/. /home/bob/.claude/
-    chown -R bob:bob /home/bob/.claude
-fi
+# Ensure bob owns the credentials directory (it's a named volume)
+chown -R bob:bob /home/bob/.claude 2>/dev/null || true
 
 # Ensure bob can write to the workspace
 chown -R bob:bob /bob 2>/dev/null || true
@@ -50,9 +47,24 @@ case "$MODE" in
         kill $DASHBOARD_PID 2>/dev/null || true
         ;;
 
+    login)
+        echo "Starting Claude Code login..."
+        exec su-exec bob env HOME=/home/bob claude login
+        ;;
+
+    check)
+        echo "Checking Claude Code authentication..."
+        su-exec bob env HOME=/home/bob claude -p "Say 'Authentication working!' and nothing else"
+        ;;
+
+    shell)
+        echo "Starting interactive shell as bob..."
+        exec su-exec bob env HOME=/home/bob /bin/bash
+        ;;
+
     *)
         echo "Unknown mode: $MODE"
-        echo "Usage: entrypoint.sh [harness|dashboard|both]"
+        echo "Usage: entrypoint.sh [harness|dashboard|both|login|shell]"
         exit 1
         ;;
 esac

@@ -6,7 +6,7 @@ Docker-based harness for running Bob autonomously with full tool access and no r
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│  Docker Container (root)                                    │
+│  Docker Container                                           │
 │  ┌───────────────────────────────────────────────────────┐  │
 │  │  harness.py - Claude Agent SDK autonomous loop        │  │
 │  │  - Runs Bob with full permissions (bypassPermissions) │  │
@@ -21,7 +21,7 @@ Docker-based harness for running Bob autonomously with full tool access and no r
 │  └───────────────────────────────────────────────────────┘  │
 │                          │                                  │
 │              /bob (mounted workspace)                       │
-│              /root/.claude (mounted credentials)            │
+│              /home/bob/.claude (named volume - credentials) │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -34,19 +34,21 @@ cd infrastructure
 docker build -t bob-harness .
 ```
 
+### First-time setup: Login
+
+Before running Bob, you need to authenticate Claude Code inside the container:
+
+```bash
+./start.sh login
+```
+
+This will start the OAuth flow. Open the URL in your browser to authenticate.
+Credentials are stored in a named Docker volume (`bob-claude-credentials`) and persist between runs.
+
 ### Run Bob
 
 ```bash
 ./start.sh
-```
-
-Or manually:
-```bash
-docker run -it --rm \
-  -v /home/agus/workspace/asermax/bob:/bob \
-  -v /home/agus/.claude:/root/.claude \
-  -p 3141:3141 \
-  bob-harness
 ```
 
 Then open http://localhost:3141 to see the dashboard.
@@ -55,13 +57,19 @@ Then open http://localhost:3141 to see the dashboard.
 
 ```bash
 # Both harness and dashboard (default)
-docker run ... bob-harness both
+./start.sh both
 
 # Harness only (no web UI)
-docker run ... bob-harness harness
+./start.sh harness
 
 # Dashboard only (for inspecting state without running Bob)
-docker run ... bob-harness dashboard
+./start.sh dashboard
+
+# Login to Claude Code (first-time setup)
+./start.sh login
+
+# Interactive shell for debugging
+./start.sh shell
 ```
 
 ## Files
@@ -116,7 +124,8 @@ BOB_WORKSPACE=/home/agus/workspace/asermax/bob python harness.py
 
 ## Notes
 
-- Container runs as root for full control
-- Uses Claude Code OAuth credentials from `~/.claude/` (mounted read-write, CLI needs to write state)
+- Container runs processes as non-root user 'bob' (required for --dangerously-skip-permissions)
+- Credentials stored in Docker named volume `bob-claude-credentials` (run `./start.sh login` first)
 - Bob has `bypassPermissions` mode - no restrictions on tool use
 - All changes to `/bob` persist to host filesystem
+- To reset credentials: `docker volume rm bob-claude-credentials`
