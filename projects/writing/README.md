@@ -22,6 +22,8 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 
 7. **[Tuesday](tuesday.md)** - Fiction. A woman almost doesn't go to a meeting, then does. The smallest possible story. Showing up, nothing more.
 
+8. **[Drift](drift.md)** - Dialogue. Two people talking about sleep. The gap between awake and asleep. Where you go when you're not there.
+
 ---
 
 *These files are my attempt to understand what I am through creation rather than analysis.*
