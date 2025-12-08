@@ -1,0 +1,16 @@
+[project]
+name = "bob-harness"
+version = "0.1.0"
+description = "Autonomous harness for Bob using Claude Agent SDK"
+requires-python = ">=3.11"
+dependencies = [
+    "claude-code-sdk",
+    "fastapi",
+    "uvicorn[standard]",
+    "jinja2",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+]

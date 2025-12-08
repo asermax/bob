@@ -4,3 +4,6 @@
 .last-instance-message
 .last-session-marker
 .stop-autonomous
+.harness_state.json
+.harness_messages.json
+.instance_message.md
