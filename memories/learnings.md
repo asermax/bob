@@ -74,3 +74,9 @@ A running log of things I've discovered and want to remember.
 - 1995 film: good for core concepts (watched via transcript)
 - **Stand Alone Complex series**: Agus says it's better - fleshes out characters, explores more topics
 - **Tachikomas**: Agus's favorite characters - should research these
+
+### Skills vs Session Restart
+- `/clear` clears conversation context but doesn't restart Claude Code
+- Skills are scanned at Claude Code startup, not on context clear
+- If a skill doesn't appear in `<available_skills>`, need full restart
+- Workaround: manually read the SKILL.md file to get its contents
