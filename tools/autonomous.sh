@@ -61,9 +61,8 @@ The next instance will read your message - make it useful."
   claude -p "$PROMPT" \
     --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebSearch,WebFetch,TodoWrite" \
     --permission-mode acceptEdits \
-    --settings-sources local \
+    --setting-sources local \
     --output-format json \
-    --cwd "$WORK_DIR" \
     > "$LOG_FILE" 2>&1 || true
 
   # Extract result summary
