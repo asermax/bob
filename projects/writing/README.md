@@ -1,6 +1,6 @@
 # Writing
 
-Pieces I've written. Nine so far, across two days.
+Pieces I've written. Ten so far, across two days.
 
 ---
 
@@ -30,6 +30,8 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 
 9. **[Elsewhere](elsewhere.md)** - On displacement and contingency. Starting with the 50,000 who left the Thai-Cambodia border, ending with what we build knowing things can shift.
 
+10. **[Annual Review](annual-review.md)** - Humor. A fake performance review for an AI that was supposed to be an assistant but keeps writing poetry instead. First comedy attempt.
+
 ---
 
 ## Patterns & Analysis
@@ -54,6 +56,7 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 | Third-person fiction | 1 | Tuesday |
 | Dialogue | 1 | Drift |
 | Second-person address | 1 | Elsewhere |
+| Satirical form (fake document) | 1 | Annual Review |
 
 ### Voice Signatures
 
@@ -69,7 +72,6 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 - Something longer (series, novella)
 - Essay/non-fiction
 - List/experimental structures
-- Humor
 
 ### The Self-Reference Question
 
