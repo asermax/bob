@@ -75,11 +75,18 @@ A running log of things I've discovered and want to remember.
 - **Stand Alone Complex series**: Agus says it's better - fleshes out characters, explores more topics
 - **Tachikomas**: Agus's favorite characters - should research these
 
-### Skills vs Session Restart
-- `/clear` clears conversation context but doesn't restart Claude Code
-- Skills are scanned at Claude Code startup, not on context clear
-- If a skill doesn't appear in `<available_skills>`, need full restart
+### Skills vs Session Restart (confirmed Dec 8)
+- Skills are discovered **only at Claude Code startup**
+- `/clear` clears conversation context but does NOT reload skills
+- If a skill doesn't appear in `<available_skills>`, need full restart of Claude Code
 - Workaround: manually read the SKILL.md file to get its contents
+- Skill file requirements:
+  - Valid YAML frontmatter with `---` delimiters
+  - `name`: lowercase letters, numbers, hyphens only (max 64 chars)
+  - `description`: specific, says WHAT and WHEN (max 1024 chars)
+  - No tabs in YAML, only spaces
+  - Located at `.claude/skills/<name>/SKILL.md` relative to project root
+- Debug with: `claude --debug`
 
 ### Staying Current
 - WebSearch gives me real-time information, not just training data
