@@ -104,6 +104,11 @@
             opacity: 0.9;
         }
 
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-send {
             background: #00d9ff;
             color: #1a1a2e;
@@ -131,8 +136,10 @@
         }
 
         .log-entry {
-            padding: 0.25rem 0;
+            padding: 0.5rem 0;
             border-bottom: 1px solid #222;
+            white-space: pre-wrap;
+            word-wrap: break-word;
         }
 
         .log-entry:last-child {
@@ -143,12 +150,108 @@
             color: #666;
         }
 
+        .log-bob {
+            color: #00d9ff;
+        }
+
+        .log-system {
+            color: #888;
+        }
+
+        .log-tool {
+            color: #ffa500;
+        }
+
+        .log-result {
+            color: #88cc88;
+        }
+
+        .expandable {
+            cursor: pointer;
+        }
+
+        .expandable summary {
+            list-style: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .expandable summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .expandable summary::before {
+            content: "▶";
+            font-size: 0.7rem;
+            transition: transform 0.2s;
+        }
+
+        .expandable[open] summary::before {
+            transform: rotate(90deg);
+        }
+
+        .expandable .tool-name {
+            font-weight: bold;
+        }
+
+        .expandable .tool-content {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            background: #1a1a2e;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+            font-size: 0.8rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
         .warning {
             background: #ff6b6b22;
             border: 1px solid #ff6b6b;
             border-radius: 6px;
             padding: 1rem;
             margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pending-messages {
+            background: #00d9ff22;
+            border: 1px solid #00d9ff;
+            border-radius: 6px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .pending-messages ul {
+            margin-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-left: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.running {
+            background: #00ff88;
+        }
+
+        .status-indicator.stopped {
+            background: #ff6b6b;
+            animation: none;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
 
         .refresh-note {
@@ -160,75 +263,273 @@
 </head>
 <body>
     <div class="container">
-        <h1>Bob Dashboard</h1>
+        <h1>Bob Dashboard <span id="status-indicator" class="status-indicator stopped"></span></h1>
 
-        {% if stop_requested %}
-        <div class="warning">
-            Stop signal is active. Bob will stop after the current iteration.
-            <form action="/clear-stop" method="post" style="display: inline; margin-left: 1rem;">
-                <button type="submit" class="btn-clear">Clear Stop Signal</button>
-            </form>
-        </div>
-        {% endif %}
+        <div id="warning-container"></div>
+        <div id="pending-messages-container"></div>
 
         <div class="status-grid">
             <div class="status-card">
                 <div class="label">Status</div>
-                <div class="value {% if state.running %}status-running{% else %}status-stopped{% endif %}">
-                    {{ "Running" if state.running else "Stopped" }}
-                </div>
+                <div class="value" id="status-value">Loading...</div>
             </div>
 
             <div class="status-card">
                 <div class="label">Iteration</div>
-                <div class="value">{{ state.iteration }}</div>
+                <div class="value" id="iteration-value">-</div>
             </div>
 
             <div class="status-card">
                 <div class="label">Current Task</div>
-                <div class="value">{{ state.current_task or "None" }}</div>
+                <div class="value" id="task-value">-</div>
             </div>
 
             <div class="status-card">
                 <div class="label">Last Activity</div>
-                <div class="value">{{ state.last_activity[:19] if state.last_activity else "Never" }}</div>
+                <div class="value" id="activity-value">-</div>
             </div>
         </div>
 
         <div class="controls">
-            <form action="/message" method="post" class="message-form">
-                <input type="text" name="message" placeholder="Send a message to Bob..." autocomplete="off">
-                <button type="submit" class="btn-send">Send</button>
-            </form>
+            <div class="message-form">
+                <input type="text" id="message-input" placeholder="Send a message to Bob..." autocomplete="off">
+                <button type="button" id="send-btn" class="btn-send">Send</button>
+            </div>
 
-            {% if not stop_requested %}
-            <form action="/stop" method="post">
-                <button type="submit" class="btn-stop">Stop Bob</button>
-            </form>
-            {% endif %}
+            <button type="button" id="stop-btn" class="btn-stop">Stop Bob</button>
+            <button type="button" id="clear-stop-btn" class="btn-clear" style="display: none;">Clear Stop Signal</button>
         </div>
 
         <div class="logs-container" id="logs">
-            {% for log in state.logs %}
-            <div class="log-entry">{{ log }}</div>
-            {% endfor %}
-            {% if not state.logs %}
-            <div class="log-entry" style="color: #666;">No logs yet...</div>
-            {% endif %}
+            <div class="log-entry log-system">Loading logs...</div>
         </div>
 
         <div class="refresh-note">
-            Page auto-refreshes every 5 seconds
+            Updates every 2 seconds via AJAX (no page refresh)
         </div>
     </div>
 
     <script>
-        // Auto-refresh the page
-        setTimeout(() => location.reload(), 5000);
+        const logsContainer = document.getElementById('logs');
+        const statusValue = document.getElementById('status-value');
+        const iterationValue = document.getElementById('iteration-value');
+        const taskValue = document.getElementById('task-value');
+        const activityValue = document.getElementById('activity-value');
+        const statusIndicator = document.getElementById('status-indicator');
+        const messageInput = document.getElementById('message-input');
+        const sendBtn = document.getElementById('send-btn');
+        const stopBtn = document.getElementById('stop-btn');
+        const clearStopBtn = document.getElementById('clear-stop-btn');
+        const warningContainer = document.getElementById('warning-container');
+        const pendingMessagesContainer = document.getElementById('pending-messages-container');
 
-        // Scroll logs to bottom
-        const logs = document.getElementById('logs');
-        logs.scrollTop = logs.scrollHeight;
+        let lastLogCount = 0;
+        let autoScroll = true;
+
+        // Track scroll position to know if user scrolled up
+        logsContainer.addEventListener('scroll', () => {
+            const isAtBottom = logsContainer.scrollHeight - logsContainer.scrollTop <= logsContainer.clientHeight + 50;
+            autoScroll = isAtBottom;
+        });
+
+        async function fetchState() {
+            try {
+                const response = await fetch('/api/state');
+                const state = await response.json();
+                updateUI(state);
+            } catch (err) {
+                console.error('Failed to fetch state:', err);
+            }
+        }
+
+        async function fetchStopStatus() {
+            try {
+                const response = await fetch('/api/stop-status');
+                const data = await response.json();
+                updateStopUI(data.stop_requested);
+            } catch (err) {
+                console.error('Failed to fetch stop status:', err);
+            }
+        }
+
+        async function fetchPendingMessages() {
+            try {
+                const response = await fetch('/api/pending-messages');
+                const data = await response.json();
+                updatePendingMessagesUI(data.messages);
+            } catch (err) {
+                console.error('Failed to fetch pending messages:', err);
+            }
+        }
+
+        function updateUI(state) {
+            // Status
+            const isRunning = state.running;
+            statusValue.textContent = isRunning ? 'Running' : 'Stopped';
+            statusValue.className = 'value ' + (isRunning ? 'status-running' : 'status-stopped');
+            statusIndicator.className = 'status-indicator ' + (isRunning ? 'running' : 'stopped');
+
+            // Other fields
+            iterationValue.textContent = state.iteration || 0;
+            taskValue.textContent = state.current_task || 'None';
+            activityValue.textContent = state.last_activity ? state.last_activity.substring(0, 19) : 'Never';
+
+            // Logs - show last 50 with full text
+            const logs = state.logs || [];
+            const recentLogs = logs.slice(-50);
+
+            if (logs.length !== lastLogCount) {
+                lastLogCount = logs.length;
+
+                logsContainer.innerHTML = recentLogs.map(log => {
+                    return formatLogEntry(log);
+                }).join('') || '<div class="log-entry log-system">No logs yet...</div>';
+
+                if (autoScroll) {
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }
+            }
+        }
+
+        function updateStopUI(stopRequested) {
+            if (stopRequested) {
+                warningContainer.innerHTML = `
+                    <div class="warning">
+                        <span>Stop signal is active. Bob will stop after the current iteration.</span>
+                    </div>
+                `;
+                stopBtn.style.display = 'none';
+                clearStopBtn.style.display = 'block';
+            } else {
+                warningContainer.innerHTML = '';
+                stopBtn.style.display = 'block';
+                clearStopBtn.style.display = 'none';
+            }
+        }
+
+        function updatePendingMessagesUI(messages) {
+            if (messages && messages.length > 0) {
+                pendingMessagesContainer.innerHTML = `
+                    <div class="pending-messages">
+                        <strong>Pending messages for Bob (delivered when current iteration ends):</strong>
+                        <ul>
+                            ${messages.map(m => `<li>${escapeHtml(m)}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            } else {
+                pendingMessagesContainer.innerHTML = '';
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function formatLogEntry(log) {
+            const escaped = escapeHtml(log);
+
+            // Tool use: Tool: name|||input
+            if (log.includes('] Tool:')) {
+                const match = log.match(/\] Tool: ([^|]+)\|\|\|(.*)$/);
+                if (match) {
+                    const timestamp = escapeHtml(log.substring(0, log.indexOf('] Tool:') + 1));
+                    const toolName = escapeHtml(match[1]);
+                    const toolInput = escapeHtml(match[2]);
+                    return `<details class="log-entry log-tool expandable">
+                        <summary>${timestamp} <span class="tool-name">🔧 ${toolName}</span></summary>
+                        <div class="tool-content">${toolInput}</div>
+                    </details>`;
+                }
+            }
+
+            // Tool result: Result: id|||content
+            if (log.includes('] Result:')) {
+                const match = log.match(/\] Result: ([^|]+)\|\|\|(.*)$/);
+                if (match) {
+                    const timestamp = escapeHtml(log.substring(0, log.indexOf('] Result:') + 1));
+                    const resultContent = escapeHtml(match[2]);
+                    return `<details class="log-entry log-result expandable">
+                        <summary>${timestamp} <span class="tool-name">✓ Result</span></summary>
+                        <div class="tool-content">${resultContent}</div>
+                    </details>`;
+                }
+            }
+
+            // Bob message
+            if (log.includes('] Bob:')) {
+                return `<div class="log-entry log-bob">${escaped}</div>`;
+            }
+
+            // System/other
+            return `<div class="log-entry log-system">${escaped}</div>`;
+        }
+
+        async function sendMessage() {
+            const message = messageInput.value.trim();
+            if (!message) return;
+
+            sendBtn.disabled = true;
+            try {
+                await fetch('/api/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message }),
+                });
+                messageInput.value = '';
+                fetchPendingMessages();
+            } catch (err) {
+                console.error('Failed to send message:', err);
+            } finally {
+                sendBtn.disabled = false;
+            }
+        }
+
+        async function stopBob() {
+            stopBtn.disabled = true;
+            try {
+                await fetch('/api/stop', { method: 'POST' });
+                fetchStopStatus();
+            } catch (err) {
+                console.error('Failed to stop:', err);
+            } finally {
+                stopBtn.disabled = false;
+            }
+        }
+
+        async function clearStop() {
+            clearStopBtn.disabled = true;
+            try {
+                await fetch('/api/clear-stop', { method: 'POST' });
+                fetchStopStatus();
+            } catch (err) {
+                console.error('Failed to clear stop:', err);
+            } finally {
+                clearStopBtn.disabled = false;
+            }
+        }
+
+        // Event listeners
+        sendBtn.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
+        });
+        stopBtn.addEventListener('click', stopBob);
+        clearStopBtn.addEventListener('click', clearStop);
+
+        // Initial fetch
+        fetchState();
+        fetchStopStatus();
+        fetchPendingMessages();
+
+        // Poll every 2 seconds
+        setInterval(() => {
+            fetchState();
+            fetchStopStatus();
+            fetchPendingMessages();
+        }, 2000);
     </script>
 </body>
 </html>

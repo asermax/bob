@@ -12,13 +12,14 @@ FROM alpine:3.21
 
 WORKDIR /bob
 
-# Install Python, Node.js, pip, and runtime dependencies
+# Install Python, Node.js, pip, git, and runtime dependencies
 RUN apk add --no-cache \
     python3 \
     py3-pip \
     nodejs \
     npm \
     bash \
+    git \
     libffi \
     su-exec
 

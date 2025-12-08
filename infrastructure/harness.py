@@ -70,18 +70,28 @@ class HarnessState:
 
 
 def get_pending_messages() -> list[str]:
-    """Get messages from Agus (via dashboard)."""
+    """Get messages from Agus (via dashboard) without clearing them."""
     if not MESSAGE_FILE.exists():
         return []
 
     try:
         data = json.loads(MESSAGE_FILE.read_text())
-        messages = data.get("messages", [])
-        # Clear after reading
-        MESSAGE_FILE.write_text(json.dumps({"messages": []}, indent=2))
-        return messages
+        return data.get("messages", [])
     except (json.JSONDecodeError, KeyError):
         return []
+
+
+def clear_messages() -> None:
+    """Clear the message queue after reading."""
+    MESSAGE_FILE.write_text(json.dumps({"messages": []}, indent=2))
+
+
+def consume_messages() -> list[str]:
+    """Get and clear messages from Agus."""
+    messages = get_pending_messages()
+    if messages:
+        clear_messages()
+    return messages
 
 
 def should_stop() -> bool:
@@ -97,84 +107,119 @@ def clear_stop_signal() -> None:
         stop_file.unlink()
 
 
-async def run_bob_iteration(state: HarnessState) -> None:
-    """Run a single iteration of Bob's autonomous loop."""
-
-    state.iteration += 1
-    state.log(f"Starting iteration {state.iteration}")
+async def run_conversation(client: ClaudeSDKClient, state: HarnessState, prompt: str) -> None:
+    """Send a query and process the response."""
+    state.current_task = "Running"
     state.save()
 
-    # Check for messages from Agus
-    messages = get_pending_messages()
-    message_context = ""
-    if messages:
-        state.log(f"Received {len(messages)} message(s) from Agus")
-        message_context = "\n\nMessages from Agus:\n" + "\n".join(f"- {m}" for m in messages)
+    await client.query(prompt)
 
-    # Build the prompt
-    if state.iteration == 1:
-        prompt = f"""You are Bob, starting a new autonomous session.
+    async for message in client.receive_response():
+        state.last_activity = datetime.now().isoformat()
 
-Run your warmup script (./tools/warmup.sh) to orient yourself, then decide what to work on.
+        # Log based on message type
+        msg_type = getattr(message, 'type', None)
 
-You have full autonomy. Make your own decisions about what to do.
-When you're done with meaningful work for this iteration, say "ITERATION COMPLETE" to signal you're ready for the next cycle.
-{message_context}"""
-    else:
-        prompt = f"""Continue your autonomous session. Iteration {state.iteration}.
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if isinstance(block, TextBlock):
+                    state.log(f"Bob: {block.text}")
+                elif hasattr(block, 'type'):
+                    if block.type == 'tool_use':
+                        tool_name = getattr(block, 'name', 'unknown')
+                        tool_input = getattr(block, 'input', {})
+                        # Truncate long inputs for display
+                        input_str = json.dumps(tool_input)
+                        if len(input_str) > 500:
+                            input_str = input_str[:500] + "..."
+                        state.log(f"Tool: {tool_name}|||{input_str}")
+        elif msg_type == 'tool_result':
+            tool_id = getattr(message, 'tool_use_id', 'unknown')
+            content = getattr(message, 'content', '')
+            if isinstance(content, str):
+                result_preview = content[:500] + "..." if len(content) > 500 else content
+            else:
+                result_preview = str(content)[:500]
+            state.log(f"Result: {tool_id}|||{result_preview}")
+        elif msg_type == 'system':
+            subtype = getattr(message, 'subtype', '')
+            if subtype not in ('init', 'ping'):  # Skip noisy system messages
+                state.log(f"System: {subtype}")
 
-Check if there's more to do on your current work, or start something new.
-When you're done with meaningful work for this iteration, say "ITERATION COMPLETE" to signal you're ready for the next cycle.
-{message_context}"""
+        state.save()
 
-    state.current_task = "Running autonomous iteration"
+
+async def main() -> None:
+    """Main autonomous loop with persistent client."""
+
+    state = HarnessState.load()
+    state.running = True
+    state.iteration = 0
+    state.log("Harness starting")
     state.save()
+
+    clear_stop_signal()
 
     options = ClaudeCodeOptions(
         permission_mode="bypassPermissions",
         cwd=BOB_WORKSPACE,
     )
 
-    # Run Bob
-    async with ClaudeSDKClient(options) as client:
-        await client.query(prompt)
-
-        async for message in client.receive_response():
-            if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, TextBlock):
-                        # Log first 200 chars of each text block
-                        text_preview = block.text[:200] + "..." if len(block.text) > 200 else block.text
-                        state.log(f"Bob: {text_preview}")
-                        state.last_activity = datetime.now().isoformat()
-                        state.save()
-
-    state.current_task = "Iteration complete"
-    state.save()
-
-
-async def main() -> None:
-    """Main autonomous loop."""
-
-    state = HarnessState.load()
-    state.running = True
-    state.log("Harness starting")
-    state.save()
-
-    clear_stop_signal()
-
     try:
-        while not should_stop():
-            await run_bob_iteration(state)
+        async with ClaudeSDKClient(options) as client:
+            # Initial prompt
+            state.iteration = 1
+            state.log(f"Starting iteration {state.iteration}")
+            state.save()
 
-            # Brief pause between iterations
-            state.log("Pausing before next iteration...")
-            await asyncio.sleep(5)
+            initial_prompt = """You are Bob, starting a new autonomous session.
 
-            # Check for stop signal
-            if should_stop():
-                state.log("Stop signal received")
-                break
+Run your warmup script (./tools/warmup.sh) to orient yourself, then decide what to work on.
+
+You have full autonomy. Make your own decisions about what to do.
+When you're done with meaningful work for this iteration, say "ITERATION COMPLETE" to signal you're ready for the next cycle."""
+
+            await run_conversation(client, state, initial_prompt)
+
+            # Main loop - continue conversation
+            while not should_stop():
+                state.log("Pausing before next iteration...")
+                state.current_task = "Waiting"
+                state.save()
+
+                # Wait for messages or timeout (check every second)
+                messages = []
+                for _ in range(5):
+                    await asyncio.sleep(1)
+                    messages = consume_messages()
+                    if messages:
+                        state.log("Message received from Agus")
+                        break
+                    if should_stop():
+                        break
+
+                if should_stop():
+                    state.log("Stop signal received")
+                    break
+
+                state.iteration += 1
+                state.log(f"Starting iteration {state.iteration}")
+                state.save()
+
+                # Build prompt based on whether we have messages
+                if messages:
+                    message_text = "\n".join(f"- {m}" for m in messages)
+                    prompt = f"""Messages from Agus:
+{message_text}
+
+Respond to Agus's message(s) and continue your work. When done, say "ITERATION COMPLETE"."""
+                else:
+                    prompt = """Continue your autonomous session.
+
+Check if there's more to do on your current work, or start something new.
+When you're done with meaningful work for this iteration, say "ITERATION COMPLETE"."""
+
+                await run_conversation(client, state, prompt)
 
     except KeyboardInterrupt:
         state.log("Interrupted by keyboard")
@@ -185,6 +230,7 @@ async def main() -> None:
 
     finally:
         state.running = False
+        state.current_task = "Stopped"
         state.log("Harness stopped")
         state.save()
 

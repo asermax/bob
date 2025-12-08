@@ -14,8 +14,12 @@ MODE="${1:-both}"
 # Ensure bob owns the credentials directory (it's a named volume)
 chown -R bob:bob /home/bob/.claude 2>/dev/null || true
 
-# Ensure bob can write to the workspace
-chown -R bob:bob /bob 2>/dev/null || true
+# Fix permissions on harness state files (may have been created by different user)
+chown bob:bob /bob/.harness_state.json 2>/dev/null || true
+chown bob:bob /bob/.harness_messages.json 2>/dev/null || true
+
+# Ensure bob can write to workspace (but don't recurse - too slow and changes git files)
+# The harness only needs to write to specific files, not the whole workspace
 
 case "$MODE" in
     harness)

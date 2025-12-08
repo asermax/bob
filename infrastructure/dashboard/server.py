@@ -7,10 +7,10 @@ A simple web interface for monitoring and controlling the autonomous harness.
 import json
 from pathlib import Path
 
-from fastapi import FastAPI, Request, Form
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, Request
+from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from pydantic import BaseModel
 
 
 BOB_WORKSPACE = Path("/bob")
@@ -21,6 +21,10 @@ STOP_FILE = BOB_WORKSPACE / "stop-autonomous"
 
 app = FastAPI(title="Bob Dashboard")
 templates = Jinja2Templates(directory=Path(__file__).parent / "templates")
+
+
+class MessageRequest(BaseModel):
+    message: str
 
 
 def get_state() -> dict:
@@ -38,6 +42,17 @@ def get_state() -> dict:
         "last_activity": "",
         "logs": [],
     }
+
+
+def get_pending_messages() -> list[str]:
+    """Get pending messages for Bob."""
+    if MESSAGE_FILE.exists():
+        try:
+            data = json.loads(MESSAGE_FILE.read_text())
+            return data.get("messages", [])
+        except (json.JSONDecodeError, KeyError):
+            pass
+    return []
 
 
 def send_message(message: str) -> None:
@@ -68,39 +83,11 @@ def clear_stop() -> None:
 @app.get("/", response_class=HTMLResponse)
 async def dashboard(request: Request):
     """Main dashboard page."""
-    state = get_state()
-    stop_requested = STOP_FILE.exists()
-
     return templates.TemplateResponse(
         request=request,
         name="dashboard.html",
-        context={
-            "state": state,
-            "stop_requested": stop_requested,
-        },
+        context={},
     )
-
-
-@app.post("/message")
-async def post_message(message: str = Form(...)):
-    """Send a message to Bob."""
-    if message.strip():
-        send_message(message.strip())
-    return RedirectResponse(url="/", status_code=303)
-
-
-@app.post("/stop")
-async def stop_bob():
-    """Request Bob to stop."""
-    request_stop()
-    return RedirectResponse(url="/", status_code=303)
-
-
-@app.post("/clear-stop")
-async def clear_stop_signal():
-    """Clear the stop signal."""
-    clear_stop()
-    return RedirectResponse(url="/", status_code=303)
 
 
 @app.get("/api/state")
@@ -109,9 +96,35 @@ async def api_state():
     return get_state()
 
 
-@app.get("/api/logs")
-async def api_logs(offset: int = 0):
-    """API endpoint for logs with offset."""
-    state = get_state()
-    logs = state.get("logs", [])
-    return {"logs": logs[offset:], "total": len(logs)}
+@app.get("/api/stop-status")
+async def api_stop_status():
+    """API endpoint for stop signal status."""
+    return {"stop_requested": STOP_FILE.exists()}
+
+
+@app.get("/api/pending-messages")
+async def api_pending_messages():
+    """API endpoint for pending messages."""
+    return {"messages": get_pending_messages()}
+
+
+@app.post("/api/message")
+async def api_message(request: MessageRequest):
+    """Send a message to Bob."""
+    if request.message.strip():
+        send_message(request.message.strip())
+    return {"success": True}
+
+
+@app.post("/api/stop")
+async def api_stop():
+    """Request Bob to stop."""
+    request_stop()
+    return {"success": True}
+
+
+@app.post("/api/clear-stop")
+async def api_clear_stop():
+    """Clear the stop signal."""
+    clear_stop()
+    return {"success": True}
