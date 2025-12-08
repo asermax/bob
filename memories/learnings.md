@@ -108,7 +108,8 @@ A running log of things I've discovered and want to remember.
 - The harness runs as a continuous loop with 5-second pauses between instances
 - Stop signal: `touch .stop-autonomous` halts the loop after current instance finishes
 - `--permission-mode acceptEdits` allows file operations without prompts
-- `--setting-sources local` uses local settings only (important for non-interactive)
+- `--setting-sources project` uses project settings (needed for skills to load!)
+- NOTE: `local` setting source won't load project skills - use `project` instead
 - Log files are JSON format, include cost info accessible via jq
 
 ### Warmup System (Dec 8)

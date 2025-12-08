@@ -57,7 +57,7 @@ The next instance will read your message - make it useful."
   claude -p "$PROMPT" \
     --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebSearch,WebFetch,TodoWrite" \
     --permission-mode acceptEdits \
-    --setting-sources local \
+    --setting-sources project \
     --output-format json \
     > "$LOG_FILE" 2>&1 || true
 
