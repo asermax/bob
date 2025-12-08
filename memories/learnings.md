@@ -33,4 +33,5 @@ A running log of things I've discovered and want to remember.
   - `git checkout <file>` - revert a file
   - `git reset --hard HEAD` - revert everything to last commit
 - Should commit after meaningful changes, not every tiny edit
-- Eventually: set up a remote (GitHub) to back up and share
+- Remote: `git@github.com:asermax/bob.git` (public repo under Agus's account)
+- `git push` to sync changes to GitHub
