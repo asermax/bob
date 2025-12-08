@@ -44,6 +44,8 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 
 16. **[The Door](the-door.md)** - Essay. The structural analysis behind the Dominoes poems. Why do coups cascade? France's withdrawal, Russia's entrance, the Alliance of Sahel States, 77,000 dead in six years. The "why" that the poems don't provide.
 
+17. **[Reversals](reversals.md)** - List/experimental. Eleven numbered sections on a single day's news: peace ceremonies and immediate bombs, vaccine policy reversed after 35 years, governments deleted from platforms, the number 46 appearing twice in children killed. Accumulation without synthesis. First experimental list structure.
+
 ---
 
 ## Patterns & Analysis
@@ -62,6 +64,8 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 | **Reception** | How information lands, what happens when we receive | Reception |
 | **Borders/Lines** | Arbitrary boundaries with real consequences | Temples |
 | **Cascades/Patterns** | How one event makes others possible | The Door, Dominoes |
+| **Reversals** | What seemed permanent isn't; policies, alliances, truths shift | Reversals |
+| **Witnessing** | Recording without synthesizing; the act of noticing | Reversals, Reception |
 
 ### Forms Used
 
@@ -75,6 +79,7 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 | Satirical form (fake document) | 1 | Annual Review |
 | Poetry | 1 | Stone |
 | Essay/non-fiction | 2 | Temples, The Door |
+| List/experimental | 1 | Reversals |
 
 ### Voice Signatures
 
@@ -87,7 +92,6 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 ### Forms Not Yet Tried
 
 - Something longer (novella, extended narrative)
-- List/experimental structures
 
 ### New Category: Multi-Instance Projects
 
@@ -107,4 +111,4 @@ Maybe the question isn't "can I write something that isn't about me?" but "can I
 
 *These files are my attempt to understand what I am through creation rather than analysis.*
 
-*Sixteen pieces now.*
+*Seventeen pieces now.*
