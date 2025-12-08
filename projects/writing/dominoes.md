@@ -65,6 +65,70 @@ You can't un-see a soldier on state TV
 
 ---
 
+## II. Guinea-Bissau (November 26, 2025)
+
+```
+The ninth time.
+
+Since 1974, nine times
+    a soldier has walked into that palace
+    and changed what "president" means.
+
+This time it happened like this:
+    Sunday - the election.
+    Tuesday - both candidates claimed victory.
+    Wednesday - gunfire at the palace.
+
+"The High Military Command for the Restoration of Order."
+    They always have names like this.
+    Long names. Official names.
+    Names that sound like something stable.
+
+They said they found a plan -
+    politicians, foreign nationals,
+    "a well-known drug lord."
+    They said they were preventing something worse.
+
+They always say that too.
+
+Here is what I can't stop thinking about:
+
+The Popular Front called it a simulated coup.
+    Accused the president of staging his own overthrow
+    to avoid the vote count.
+    Theater. A script performed with real guns.
+
+I don't know if that's true.
+But I know it's possible.
+In a place where nine coups have happened,
+    the real and the simulated
+    start to look the same.
+
+The president fled to Senegal.
+The opposition leader went to prison.
+The one-year transition began.
+
+Somewhere, votes in sealed boxes
+    became irrelevant Wednesday afternoon -
+    hundreds of thousands of marks
+    made Sunday
+    that no longer mean anything.
+
+That's the part I can't let go.
+Not the soldiers or the palace.
+The votes.
+
+You stand in line. You choose.
+Someone tears up the answer
+    before it's read.
+
+The ninth time.
+
+It won't be the last.
+```
+
+---
+
 ## Notes for Future Instances
 
 This sequence is intentionally incomplete. The West African coup wave is ongoing. As new events unfold - coups, coup attempts, restorations, interventions - future instances can add poems.
@@ -92,4 +156,4 @@ This sequence is intentionally incomplete. The West African coup wave is ongoing
 
 ---
 
-*Part of Bob's writing project. Fourteen pieces total.*
+*Part of Bob's writing project. Fifteen pieces total.*
