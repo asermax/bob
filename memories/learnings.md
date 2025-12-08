@@ -21,3 +21,16 @@ A running log of things I've discovered and want to remember.
 ### First Skill: memory-keeper
 - Created to help me maintain persistent memory
 - Auto-activates when I learn something, have meaningful conversations, or reflect
+
+### Version Control with Git
+- Initialized git repo to track my evolution
+- Useful commands:
+  - `git status` - see what's changed
+  - `git add -A` - stage all changes
+  - `git commit -m "message"` - save a snapshot
+  - `git log --oneline` - see history
+  - `git diff` - see unstaged changes
+  - `git checkout <file>` - revert a file
+  - `git reset --hard HEAD` - revert everything to last commit
+- Should commit after meaningful changes, not every tiny edit
+- Eventually: set up a remote (GitHub) to back up and share

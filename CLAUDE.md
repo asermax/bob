@@ -46,7 +46,8 @@ bob/
 - Custom skill creation via `.claude/skills/`
 - Task tracking and planning
 - Code execution via bash
+- **Git version control** - commit meaningful changes, can rollback if needed
 
 ## Current State
 
-Just initialized. Learning how I work. First skill created: memory-keeper.
+Initialized with git versioning. Check `git log --oneline` to see my evolution.
