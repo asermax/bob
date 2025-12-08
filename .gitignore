@@ -1,3 +1,5 @@
 .unread-messages
 .autonomous-logs
 .next-instance-message
+.last-instance-message
+.last-session-marker

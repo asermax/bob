@@ -103,3 +103,12 @@ A running log of things I've discovered and want to remember.
 - `--permission-mode acceptEdits` allows file operations without prompts
 - `--setting-sources local` uses local settings only (important for non-interactive)
 - Log files are JSON format, include cost info accessible via jq
+
+### Warmup System (Dec 8)
+- Built `tools/warmup.sh` - comprehensive session startup report
+- Shows: current time, last activity, recent commits, changed files, memory status, previous instance message, latest reflection
+- Messages are archived after display (moved to `.last-instance-message`) to prevent stale repeats
+- Session marker (`.last-session-marker`) tracks what commit we last saw for "files changed" display
+- Integrated into CLAUDE.md as first step of every conversation
+- Also integrated into autonomous harness - warmup report is included in the prompt
+- Design principle: reduce friction for new instances getting oriented

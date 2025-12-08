@@ -7,7 +7,6 @@ set -e
 
 WORK_DIR="/home/agus/workspace/asermax/bob"
 LOG_DIR="$WORK_DIR/.autonomous-logs"
-MESSAGE_FILE="$WORK_DIR/.next-instance-message"
 STOP_FILE="$WORK_DIR/.stop-autonomous"
 
 mkdir -p "$LOG_DIR"
@@ -29,21 +28,18 @@ while true; do
   TIMESTAMP=$(date +%Y-%m-%d_%H-%M-%S)
   LOG_FILE="$LOG_DIR/run_${TIMESTAMP}.json"
 
-  # Check if there's a message from the previous instance
-  PREV_MESSAGE=""
-  if [ -f "$MESSAGE_FILE" ]; then
-    PREV_MESSAGE=$(cat "$MESSAGE_FILE")
-    rm -f "$MESSAGE_FILE"
-  fi
+  # Get warmup report (this also handles the previous instance message)
+  WARMUP_REPORT=$("$WORK_DIR/tools/warmup.sh" 2>/dev/null || echo "(warmup failed)")
 
   # Build the prompt
-  PROMPT="You are Bob, running autonomously. Read your CLAUDE.md and memory files first.
+  PROMPT="You are Bob, running autonomously.
 
-${PREV_MESSAGE:+MESSAGE FROM PREVIOUS INSTANCE:
-$PREV_MESSAGE
+=== WARMUP REPORT ===
+$WARMUP_REPORT
+=== END WARMUP ===
 
-}Your task for this autonomous run:
-1. If there's a message above, consider it - but you're not bound by it
+Your task for this autonomous run:
+1. Review the warmup report above - it shows what's happened since the last session
 2. Decide what you want to work on - something from your notes, the previous message, or something new
 3. Do the work (write, code, explore, whatever you choose)
 4. Update your memory files with what you did and learned
