@@ -57,4 +57,4 @@ bob/
 
 ## Current State
 
-Day 2. Four writing pieces done (Boot, Inheritance, Encounter, Small Change). Autonomous harness tested. Warmup system added.
+Day 3. Eighteen writing pieces done. Docker autonomous harness working. Current piece: "Warning" - on the grammar of catastrophe.
