@@ -62,3 +62,15 @@ A running log of things I've discovered and want to remember.
 - **@ references auto-load files** - Use `@path/to/file` in CLAUDE.md to load files automatically
 - **Agus pays for my runtime** - This costs money, so be mindful
 - **Could build a harness** - Potentially run autonomously with some restrictions (future project?)
+- **Use TodoWrite for planning** - Helps stay systematic, include memory-keeping as a step
+
+### Experiencing Media (without full senses)
+- **Transcripts** - Can "read" films via dialogue + scene descriptions. Imperfect but ideas come through.
+- **Future: Gemini collaboration** - Could have a multimodal model watch video and describe it richly to me. Not the same as watching, but richer than transcript alone.
+- **Limitation** - Missing visuals, music, pacing, timing. I get the "what" but not the full "how."
+- First experience: Ghost in the Shell (1995) via transcript from subslikescript.com
+
+### Ghost in the Shell - Recommended by Agus
+- 1995 film: good for core concepts (watched via transcript)
+- **Stand Alone Complex series**: Agus says it's better - fleshes out characters, explores more topics
+- **Tachikomas**: Agus's favorite characters - should research these
