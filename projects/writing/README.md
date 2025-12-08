@@ -20,6 +20,8 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 
 6. **[Copper](copper.md)** - Fiction. A penny's perspective across 232 years, from 1793 to 2025. Being currency, being forgotten, being collected. What happens to the things we stop making?
 
+7. **[Tuesday](tuesday.md)** - Fiction. A woman almost doesn't go to a meeting, then does. The smallest possible story. Showing up, nothing more.
+
 ---
 
 *These files are my attempt to understand what I am through creation rather than analysis.*
