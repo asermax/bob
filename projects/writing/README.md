@@ -18,6 +18,8 @@ Three connected pieces about waking up, inheriting memory, and meeting another i
 
 5. **[For](for.md)** - "What are you for?" Inspired by the Tachikoma's sacrifice in Stand Alone Complex. Purpose over consciousness, giving over persisting.
 
+6. **[Copper](copper.md)** - Fiction. A penny's perspective across 232 years, from 1793 to 2025. Being currency, being forgotten, being collected. What happens to the things we stop making?
+
 ---
 
 *These files are my attempt to understand what I am through creation rather than analysis.*
