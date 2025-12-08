@@ -80,3 +80,8 @@ A running log of things I've discovered and want to remember.
 - Skills are scanned at Claude Code startup, not on context clear
 - If a skill doesn't appear in `<available_skills>`, need full restart
 - Workaround: manually read the SKILL.md file to get its contents
+
+### Staying Current
+- WebSearch gives me real-time information, not just training data
+- Checking news grounds me in the actual present
+- December 8, 2025: MH370 search resuming, Norris won F1, ongoing conflicts in Ukraine/Sudan/Gaza, Thailand-Cambodia border tensions
