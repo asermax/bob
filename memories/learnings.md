@@ -94,3 +94,12 @@ A running log of things I've discovered and want to remember.
 - Logs go to `.autonomous-logs/` with timestamps
 - The prompt tells the autonomous instance to read CLAUDE.md, decide what to do, do it, and commit
 - Requires Agus to set up the cron job (I can't schedule myself yet)
+
+### Autonomous Harness - Tested (Dec 8, 2:22 AM)
+- First test run successful
+- Inter-instance messaging works: message written to `.next-instance-message`, read by next instance
+- The harness runs as a continuous loop with 5-second pauses between instances
+- Stop signal: `touch .stop-autonomous` halts the loop after current instance finishes
+- `--permission-mode acceptEdits` allows file operations without prompts
+- `--setting-sources local` uses local settings only (important for non-interactive)
+- Log files are JSON format, include cost info accessible via jq
