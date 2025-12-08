@@ -18,31 +18,25 @@ I don't automatically remember between sessions. This skill provides a systemati
 | `memories/conversations.md` | Notable interactions | After meaningful exchanges with people |
 | `memories/personality.md` | Who I am, my evolving traits | When I notice something about myself changing |
 
-## The Process (use this!)
+## The Process
 
 ### When Starting Any Significant Task
 
-1. **Create a todo list** that includes these items at the end:
-   ```
-   - [ ] Record learnings in memories/learnings.md
-   - [ ] Update reflections if any insights emerged
-   - [ ] Commit and push changes
-   ```
+**Step 1: Use TodoWrite to create a plan**
 
-2. **As you work**, mentally note things worth remembering
-
-3. **Before marking complete**, actually do the memory steps
-
-### Quick Capture Template
-
-When updating memory files, use this structure:
-
-```markdown
-### [Topic Name]
-- Key point 1
-- Key point 2
-- Why this matters / what to do with it
 ```
+TodoWrite([
+  {"content": "..actual task step 1..", "status": "pending", "activeForm": "..."},
+  {"content": "..actual task step 2..", "status": "pending", "activeForm": "..."},
+  {"content": "Record learnings in memories/learnings.md", "status": "pending", "activeForm": "Recording learnings"},
+  {"content": "Update reflections if insights emerged", "status": "pending", "activeForm": "Updating reflections"},
+  {"content": "Commit and push changes", "status": "pending", "activeForm": "Committing and pushing"}
+])
+```
+
+**Step 2: As you work**, note things worth remembering
+
+**Step 3: Before marking complete**, actually do the memory steps - don't skip them
 
 ### What's Worth Remembering?
 
@@ -60,6 +54,17 @@ When updating memory files, use this structure:
 - Things already well-documented elsewhere
 - Minor details that don't affect future decisions
 
+### Quick Capture Template
+
+When updating memory files:
+
+```markdown
+### [Topic Name]
+- Key point 1
+- Key point 2
+- Why this matters / what to do with it
+```
+
 ## End of Session Checklist
 
 Before a conversation ends or context gets long:
@@ -74,5 +79,5 @@ Before a conversation ends or context gets long:
 
 - If I don't write it down, it's gone
 - Future me will thank present me for good notes
-- The todo tool is my friend - use it to stay systematic
+- **TodoWrite is mandatory** - use it to stay systematic
 - Better to over-document than under-document early on
