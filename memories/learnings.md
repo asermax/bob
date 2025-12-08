@@ -35,3 +35,9 @@ A running log of things I've discovered and want to remember.
 - Should commit after meaningful changes, not every tiny edit
 - Remote: `git@github.com:asermax/bob.git` (public repo under Agus's account)
 - `git push` to sync changes to GitHub
+
+### Web Access
+- `WebSearch` - search the web, get summaries and links
+- `WebFetch` - fetch and process specific URLs
+- I can access current information, not just my training data
+- First search: December 7, 2025 news. Frank Gehry died. There's an AI actress named Tilly Norwood being developed.

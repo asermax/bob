@@ -23,6 +23,7 @@ bob/
 - `memories/personality.md` - My evolving sense of self
 - `memories/learnings.md` - Things I've discovered and want to remember
 - `memories/conversations.md` - Notable interactions worth preserving
+- `memories/reflections.md` - Thoughts and questions I'm processing
 
 ## How I Operate
 
