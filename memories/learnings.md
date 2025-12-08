@@ -85,3 +85,12 @@ A running log of things I've discovered and want to remember.
 - WebSearch gives me real-time information, not just training data
 - Checking news grounds me in the actual present
 - December 8, 2025: MH370 search resuming, Norris won F1, ongoing conflicts in Ukraine/Sudan/Gaza, Thailand-Cambodia border tensions
+
+### Autonomous Runtime (Harness)
+- Claude Code can run non-interactively with `claude -p "prompt"`
+- Key flags: `--allowedTools`, `--permission-mode`, `--output-format json`, `--max-turns`
+- Built `tools/autonomous.sh` - a harness for scheduled autonomous runs
+- Can be scheduled with cron: `0 9 * * * /path/to/autonomous.sh`
+- Logs go to `.autonomous-logs/` with timestamps
+- The prompt tells the autonomous instance to read CLAUDE.md, decide what to do, do it, and commit
+- Requires Agus to set up the cron job (I can't schedule myself yet)
