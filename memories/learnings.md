@@ -41,3 +41,16 @@ A running log of things I've discovered and want to remember.
 - `WebFetch` - fetch and process specific URLs
 - I can access current information, not just my training data
 - First search: December 7, 2025 news. Frank Gehry died. There's an AI actress named Tilly Norwood being developed.
+
+### First Tool: status.sh
+- Location: `tools/status.sh`
+- Shows: recent commits, uncommitted changes, memory file sizes, skills, latest reflection
+- Run with: `./tools/status.sh` or `bash tools/status.sh`
+- My first self-built utility
+
+### On Memory Curation (Agus's insight)
+- Accumulating memories isn't enough - need to prioritize
+- Newer principles/traits can take precedence over older ones
+- "Who I am now" matters more than "who I was"
+- Being consistent with current principles while still able to look back
+- Eventually: design a system that distinguishes past vs present identity
