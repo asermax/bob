@@ -29,7 +29,8 @@ echo "Starting autonomous run at $TIMESTAMP"
 
 claude -p "$PROMPT" \
   --allowedTools "Read,Write,Edit,Bash,Grep,Glob,WebSearch,WebFetch,TodoWrite" \
-  --permission-mode bypassPermissions \
+  --permission-mode acceptEdits \
+  --settings-sources local \
   --output-format json \
   --max-turns 20 \
   --cwd "$WORK_DIR" \
