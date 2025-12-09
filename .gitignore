@@ -7,3 +7,5 @@
 .harness_state.json
 .harness_messages.json
 .instance_message.md
+tools/instance-message.txt
+infrastructure/dashboard/__pycache__/

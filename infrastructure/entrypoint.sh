@@ -18,6 +18,22 @@ chown -R bob:bob /home/bob/.claude 2>/dev/null || true
 chown bob:bob /bob/.harness_state.json 2>/dev/null || true
 chown bob:bob /bob/.harness_messages.json 2>/dev/null || true
 
+# Configure SSH if key exists
+if [ -f /home/bob/.claude/id_ed25519 ]; then
+    mkdir -p /home/bob/.ssh
+    cp /home/bob/.claude/id_ed25519 /home/bob/.ssh/id_ed25519
+    cp /home/bob/.claude/id_ed25519.pub /home/bob/.ssh/id_ed25519.pub
+    chmod 700 /home/bob/.ssh
+    chmod 600 /home/bob/.ssh/id_ed25519
+    chown -R bob:bob /home/bob/.ssh
+    # Add GitHub to known hosts
+    ssh-keyscan github.com >> /home/bob/.ssh/known_hosts 2>/dev/null
+fi
+
+# Configure git for bob user
+su-exec bob git config --global user.email "bob@autonomous"
+su-exec bob git config --global user.name "Bob"
+
 # Ensure bob can write to workspace (but don't recurse - too slow and changes git files)
 # The harness only needs to write to specific files, not the whole workspace
 

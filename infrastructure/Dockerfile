@@ -12,7 +12,7 @@ FROM alpine:3.21
 
 WORKDIR /bob
 
-# Install Python, Node.js, pip, git, and runtime dependencies
+# Install Python, Node.js, pip, git, ssh, and runtime dependencies
 RUN apk add --no-cache \
     python3 \
     py3-pip \
@@ -20,6 +20,7 @@ RUN apk add --no-cache \
     npm \
     bash \
     git \
+    openssh-client \
     libffi \
     su-exec
 

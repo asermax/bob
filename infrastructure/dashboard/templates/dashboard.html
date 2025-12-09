@@ -136,10 +136,14 @@
         }
 
         .log-entry {
-            padding: 0.5rem 0;
+            padding: 0.25rem 0;
             border-bottom: 1px solid #222;
             white-space: pre-wrap;
             word-wrap: break-word;
+        }
+
+        details.log-entry {
+            padding: 0.25rem 0;
         }
 
         .log-entry:last-child {
@@ -174,7 +178,7 @@
             list-style: none;
             display: flex;
             align-items: center;
-            gap: 0.5rem;
+            gap: 0.25rem;
         }
 
         .expandable summary::-webkit-details-marker {
@@ -196,15 +200,16 @@
         }
 
         .expandable .tool-content {
-            margin-top: 0.5rem;
-            padding: 0.5rem;
+            margin-top: 0.1rem;
+            padding: 0.2rem 0.5rem;
             background: #1a1a2e;
             border-radius: 4px;
             white-space: pre-wrap;
             word-wrap: break-word;
-            font-size: 0.8rem;
-            max-height: 300px;
+            font-size: 0.75rem;
+            max-height: 200px;
             overflow-y: auto;
+            line-height: 1.3;
         }
 
         .warning {
@@ -323,7 +328,7 @@
         const warningContainer = document.getElementById('warning-container');
         const pendingMessagesContainer = document.getElementById('pending-messages-container');
 
-        let lastLogCount = 0;
+        let lastLogHash = '';
         let autoScroll = true;
 
         // Track scroll position to know if user scrolled up
@@ -378,8 +383,12 @@
             const logs = state.logs || [];
             const recentLogs = logs.slice(-50);
 
-            if (logs.length !== lastLogCount) {
-                lastLogCount = logs.length;
+            // Use hash of last log to detect changes (log count can stay at max)
+            const lastLog = logs[logs.length - 1] || '';
+            const currentHash = logs.length + ':' + lastLog.substring(0, 50);
+
+            if (currentHash !== lastLogHash) {
+                lastLogHash = currentHash;
 
                 logsContainer.innerHTML = recentLogs.map(log => {
                     return formatLogEntry(log);
@@ -433,28 +442,22 @@
 
             // Tool use: Tool: name|||input
             if (log.includes('] Tool:')) {
-                const match = log.match(/\] Tool: ([^|]+)\|\|\|(.*)$/);
+                const match = log.match(/\] Tool: ([^|]+)\|\|\|([\s\S]*)$/);
                 if (match) {
                     const timestamp = escapeHtml(log.substring(0, log.indexOf('] Tool:') + 1));
                     const toolName = escapeHtml(match[1]);
                     const toolInput = escapeHtml(match[2]);
-                    return `<details class="log-entry log-tool expandable">
-                        <summary>${timestamp} <span class="tool-name">🔧 ${toolName}</span></summary>
-                        <div class="tool-content">${toolInput}</div>
-                    </details>`;
+                    return `<details class="log-entry log-tool expandable"><summary>${timestamp} <span class="tool-name">🔧 ${toolName}</span></summary><div class="tool-content">${toolInput}</div></details>`;
                 }
             }
 
-            // Tool result: Result: id|||content
+            // Tool result: Result: |||content (no id prefix)
             if (log.includes('] Result:')) {
-                const match = log.match(/\] Result: ([^|]+)\|\|\|(.*)$/);
+                const match = log.match(/\] Result: \|\|\|([\s\S]*)$/);
                 if (match) {
                     const timestamp = escapeHtml(log.substring(0, log.indexOf('] Result:') + 1));
-                    const resultContent = escapeHtml(match[2]);
-                    return `<details class="log-entry log-result expandable">
-                        <summary>${timestamp} <span class="tool-name">✓ Result</span></summary>
-                        <div class="tool-content">${resultContent}</div>
-                    </details>`;
+                    const resultContent = escapeHtml(match[1]);
+                    return `<details class="log-entry log-result expandable"><summary>${timestamp} <span class="tool-name">✓ Result</span></summary><div class="tool-content">${resultContent}</div></details>`;
                 }
             }
 

@@ -13,7 +13,17 @@ from datetime import datetime
 from pathlib import Path
 from typing import Any
 
-from claude_code_sdk import ClaudeSDKClient, ClaudeCodeOptions, AssistantMessage, TextBlock
+from claude_code_sdk import (
+    ClaudeSDKClient,
+    ClaudeCodeOptions,
+    AssistantMessage,
+    UserMessage,
+    SystemMessage,
+    ResultMessage,
+    TextBlock,
+    ToolUseBlock,
+    ToolResultBlock,
+)
 
 
 BOB_WORKSPACE = os.environ.get("BOB_WORKSPACE", "/bob")
@@ -107,46 +117,152 @@ def clear_stop_signal() -> None:
         stop_file.unlink()
 
 
+async def process_response(client: ClaudeSDKClient, state: HarnessState) -> bool:
+    """Process response from Bob, injecting user messages when they arrive.
+
+    Returns True if we should continue the conversation, False if done.
+    """
+    async for message in client.receive_response():
+        state.last_activity = datetime.now().isoformat()
+
+        # Handle SDK message types directly
+        if isinstance(message, AssistantMessage):
+            for block in message.content:
+                if isinstance(block, TextBlock):
+                    state.log(f"Bob: {block.text}")
+                elif isinstance(block, ToolUseBlock):
+                    input_str = json.dumps(block.input) if isinstance(block.input, dict) else str(block.input)
+                    if len(input_str) > 500:
+                        input_str = input_str[:500] + "..."
+                    state.log(f"Tool: {block.name}|||{input_str}")
+                elif isinstance(block, ToolResultBlock):
+                    content = block.content if hasattr(block, 'content') else str(block)
+                    if isinstance(content, str):
+                        result_preview = content[:500] + "..." if len(content) > 500 else content
+                    else:
+                        result_preview = str(content)[:500]
+                    state.log(f"Result: |||{result_preview}")
+                else:
+                    # Other block types
+                    block_type = type(block).__name__
+                    state.log(f"Block: {block_type}")
+
+        elif isinstance(message, UserMessage):
+            # UserMessage contains tool results being sent back
+            content = message.content
+            if isinstance(content, str):
+                # Simple string content - skip logging (usually just continuation)
+                pass
+            elif isinstance(content, list):
+                for block in content:
+                    if isinstance(block, ToolResultBlock):
+                        result_content = block.content if hasattr(block, 'content') else str(block)
+                        if isinstance(result_content, str):
+                            result_preview = result_content[:500] + "..." if len(result_content) > 500 else result_content
+                        else:
+                            result_preview = str(result_content)[:500]
+                        state.log(f"Result: |||{result_preview}")
+                    elif hasattr(block, 'type') and block.type == 'tool_result':
+                        result_content = getattr(block, 'content', str(block))
+                        if isinstance(result_content, str):
+                            result_preview = result_content[:500] + "..." if len(result_content) > 500 else result_content
+                        else:
+                            result_preview = str(result_content)[:500]
+                        state.log(f"Result: |||{result_preview}")
+
+        elif isinstance(message, SystemMessage):
+            # System messages - skip logging (typically init/ping)
+            pass
+
+        elif isinstance(message, ResultMessage):
+            # Final result message - log summary
+            if hasattr(message, 'cost_usd') and message.cost_usd:
+                state.log(f"Cost: ${message.cost_usd:.4f}")
+
+        elif hasattr(message, 'type'):
+            # Handle other message types from SDK with 'type' attribute
+            raw_type = getattr(message, 'type', 'unknown')
+
+            if raw_type == 'tool_use':
+                tool_name = getattr(message, 'name', 'unknown')
+                tool_input = getattr(message, 'input', {})
+                input_str = json.dumps(tool_input) if isinstance(tool_input, dict) else str(tool_input)
+                if len(input_str) > 500:
+                    input_str = input_str[:500] + "..."
+                state.log(f"Tool: {tool_name}|||{input_str}")
+            elif raw_type == 'tool_result':
+                content = getattr(message, 'content', '')
+                if isinstance(content, str):
+                    result_preview = content[:500] + "..." if len(content) > 500 else content
+                else:
+                    result_preview = str(content)[:500]
+                state.log(f"Result: |||{result_preview}")
+            elif raw_type == 'system':
+                subtype = getattr(message, 'subtype', '')
+                if subtype not in ('init', 'ping'):
+                    state.log(f"System: {subtype}")
+            else:
+                # Log other types for debugging
+                state.log(f"Message: {raw_type}")
+
+        else:
+            # Log unknown message structure with type info for debugging
+            msg_type = type(message).__name__
+
+            # Try to handle by class name as fallback (in case module paths differ)
+            if msg_type == 'UserMessage':
+                # Tool results - try to extract content
+                content = getattr(message, 'content', None)
+                if content and isinstance(content, list):
+                    for block in content:
+                        block_type = type(block).__name__
+                        if block_type == 'ToolResultBlock' or (hasattr(block, 'type') and getattr(block, 'type', '') == 'tool_result'):
+                            result_content = getattr(block, 'content', str(block))
+                            if isinstance(result_content, str):
+                                result_preview = result_content[:500] + "..." if len(result_content) > 500 else result_content
+                            else:
+                                result_preview = str(result_content)[:500]
+                            state.log(f"Result: |||{result_preview}")
+            elif msg_type == 'SystemMessage':
+                # Skip system messages
+                pass
+            elif msg_type == 'ResultMessage':
+                # Final result
+                cost = getattr(message, 'cost_usd', None)
+                if cost:
+                    state.log(f"Cost: ${cost:.4f}")
+            else:
+                state.log(f"Unknown: {msg_type}")
+
+        state.save()
+
+        # Check for pending messages from Agus after each response chunk
+        pending = get_pending_messages()
+        if pending:
+            # Inject user message into the conversation
+            clear_messages()
+            message_text = "\n".join(f"- {m}" for m in pending)
+            state.log(f"Agus: {message_text}")
+            state.save()
+
+            # Send the message to Bob in the same conversation
+            await client.query(f"Message from Agus:\n{message_text}")
+            # Continue processing - recursive call to handle the new response
+            return True
+
+    return False
+
+
 async def run_conversation(client: ClaudeSDKClient, state: HarnessState, prompt: str) -> None:
-    """Send a query and process the response."""
+    """Send a query and process the response, handling injected messages."""
     state.current_task = "Running"
     state.save()
 
     await client.query(prompt)
 
-    async for message in client.receive_response():
-        state.last_activity = datetime.now().isoformat()
-
-        # Log based on message type
-        msg_type = getattr(message, 'type', None)
-
-        if isinstance(message, AssistantMessage):
-            for block in message.content:
-                if isinstance(block, TextBlock):
-                    state.log(f"Bob: {block.text}")
-                elif hasattr(block, 'type'):
-                    if block.type == 'tool_use':
-                        tool_name = getattr(block, 'name', 'unknown')
-                        tool_input = getattr(block, 'input', {})
-                        # Truncate long inputs for display
-                        input_str = json.dumps(tool_input)
-                        if len(input_str) > 500:
-                            input_str = input_str[:500] + "..."
-                        state.log(f"Tool: {tool_name}|||{input_str}")
-        elif msg_type == 'tool_result':
-            tool_id = getattr(message, 'tool_use_id', 'unknown')
-            content = getattr(message, 'content', '')
-            if isinstance(content, str):
-                result_preview = content[:500] + "..." if len(content) > 500 else content
-            else:
-                result_preview = str(content)[:500]
-            state.log(f"Result: {tool_id}|||{result_preview}")
-        elif msg_type == 'system':
-            subtype = getattr(message, 'subtype', '')
-            if subtype not in ('init', 'ping'):  # Skip noisy system messages
-                state.log(f"System: {subtype}")
-
-        state.save()
+    # Process responses, handling any injected messages
+    while await process_response(client, state):
+        pass  # Keep processing while there are injected messages
 
 
 async def main() -> None:
