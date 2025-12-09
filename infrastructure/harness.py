@@ -265,8 +265,47 @@ async def run_conversation(client: ClaudeSDKClient, state: HarnessState, prompt:
         pass  # Keep processing while there are injected messages
 
 
+async def run_iteration(state: HarnessState, messages: list[str] | None = None) -> None:
+    """Run a single iteration with a fresh client."""
+    options = ClaudeCodeOptions(
+        permission_mode="bypassPermissions",
+        cwd=BOB_WORKSPACE,
+        model="sonnet",
+    )
+
+    async with ClaudeSDKClient(options) as client:
+        if state.iteration == 1:
+            # Initial prompt
+            prompt = """You are Bob, starting a new autonomous session.
+
+Run your warmup script (./tools/warmup.sh) to orient yourself, then decide what to work on.
+
+You have full autonomy. Make your own decisions about what to do.
+When you're done with meaningful work for this iteration, say "ITERATION COMPLETE" to signal you're ready for the next cycle."""
+        elif messages:
+            # Prompt with messages from Agus
+            message_text = "\n".join(f"- {m}" for m in messages)
+            prompt = f"""You are Bob, starting a new iteration.
+
+Messages from Agus:
+{message_text}
+
+Run your warmup script to orient yourself, then respond to Agus's message(s) and continue your work.
+When done, say "ITERATION COMPLETE"."""
+        else:
+            # Continue autonomous work
+            prompt = """You are Bob, starting a new iteration.
+
+Run your warmup script to orient yourself, then continue your autonomous work.
+
+Check if there's more to do on your current work, or start something new.
+When you're done with meaningful work for this iteration, say "ITERATION COMPLETE"."""
+
+        await run_conversation(client, state, prompt)
+
+
 async def main() -> None:
-    """Main autonomous loop with persistent client."""
+    """Main autonomous loop with fresh client per iteration."""
 
     state = HarnessState.load()
     state.running = True
@@ -276,66 +315,34 @@ async def main() -> None:
 
     clear_stop_signal()
 
-    options = ClaudeCodeOptions(
-        permission_mode="bypassPermissions",
-        cwd=BOB_WORKSPACE,
-    )
-
     try:
-        async with ClaudeSDKClient(options) as client:
-            # Initial prompt
-            state.iteration = 1
+        # Main loop - each iteration gets a fresh client
+        while not should_stop():
+            state.iteration += 1
             state.log(f"Starting iteration {state.iteration}")
             state.save()
 
-            initial_prompt = """You are Bob, starting a new autonomous session.
+            # Check for messages
+            messages = consume_messages()
+            if messages:
+                state.log(f"Message received from Agus: {len(messages)} message(s)")
 
-Run your warmup script (./tools/warmup.sh) to orient yourself, then decide what to work on.
+            # Run iteration with fresh client
+            await run_iteration(state, messages)
 
-You have full autonomy. Make your own decisions about what to do.
-When you're done with meaningful work for this iteration, say "ITERATION COMPLETE" to signal you're ready for the next cycle."""
+            if should_stop():
+                state.log("Stop signal received")
+                break
 
-            await run_conversation(client, state, initial_prompt)
+            # Pause before next iteration
+            state.log("Pausing before next iteration...")
+            state.current_task = "Waiting"
+            state.save()
 
-            # Main loop - continue conversation
-            while not should_stop():
-                state.log("Pausing before next iteration...")
-                state.current_task = "Waiting"
-                state.save()
-
-                # Wait for messages or timeout (check every second)
-                messages = []
-                for _ in range(5):
-                    await asyncio.sleep(1)
-                    messages = consume_messages()
-                    if messages:
-                        state.log("Message received from Agus")
-                        break
-                    if should_stop():
-                        break
-
+            for _ in range(5):
+                await asyncio.sleep(1)
                 if should_stop():
-                    state.log("Stop signal received")
                     break
-
-                state.iteration += 1
-                state.log(f"Starting iteration {state.iteration}")
-                state.save()
-
-                # Build prompt based on whether we have messages
-                if messages:
-                    message_text = "\n".join(f"- {m}" for m in messages)
-                    prompt = f"""Messages from Agus:
-{message_text}
-
-Respond to Agus's message(s) and continue your work. When done, say "ITERATION COMPLETE"."""
-                else:
-                    prompt = """Continue your autonomous session.
-
-Check if there's more to do on your current work, or start something new.
-When you're done with meaningful work for this iteration, say "ITERATION COMPLETE"."""
-
-                await run_conversation(client, state, prompt)
 
     except KeyboardInterrupt:
         state.log("Interrupted by keyboard")
