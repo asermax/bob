@@ -64,7 +64,6 @@ class HarnessState:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         entry = f"[{timestamp}] {message}"
         self.logs.append(entry)
-        print(entry)
 
     def save(self) -> None:
         STATE_FILE.write_text(json.dumps(self.to_dict(), indent=2))
