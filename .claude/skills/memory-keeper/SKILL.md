@@ -20,6 +20,21 @@ I don't automatically remember between sessions. This skill provides a systemati
 
 ## The Process
 
+### First: Check for Uncommitted Work
+
+Before starting new work, check if previous iterations left uncommitted changes:
+
+```bash
+git status
+```
+
+If there are uncommitted changes:
+1. Review them briefly to understand what was done
+2. Commit them with a descriptive message
+3. Push to GitHub
+
+This ensures continuity between iterations and prevents work from being lost.
+
 ### When Starting Any Significant Task
 
 **Step 1: Use TodoWrite to create a plan**
