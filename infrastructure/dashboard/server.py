@@ -120,6 +120,16 @@ async def writing(request: Request):
     )
 
 
+@app.get("/pieces/{piece_id}", response_class=HTMLResponse)
+async def piece(request: Request, piece_id: str):
+    """Individual writing piece page."""
+    return templates.TemplateResponse(
+        request=request,
+        name=f"pieces/{piece_id}.html",
+        context={},
+    )
+
+
 @app.get("/api/state")
 async def api_state():
     """API endpoint for state (for polling)."""
