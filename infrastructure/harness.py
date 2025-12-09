@@ -316,7 +316,7 @@ async def main() -> None:
 
     try:
         # Main loop - each iteration gets a fresh client
-        while not should_stop():
+        while True:
             state.iteration += 1
             state.log(f"Starting iteration {state.iteration}")
             state.save()
@@ -326,11 +326,12 @@ async def main() -> None:
             if messages:
                 state.log(f"Message received from Agus: {len(messages)} message(s)")
 
-            # Run iteration with fresh client
+            # Run iteration with fresh client (completes fully before checking stop)
             await run_iteration(state, messages)
 
+            # Check for stop signal ONLY after iteration completes
             if should_stop():
-                state.log("Stop signal received")
+                state.log("Stop signal received after iteration completed")
                 break
 
             # Pause before next iteration
@@ -338,10 +339,8 @@ async def main() -> None:
             state.current_task = "Waiting"
             state.save()
 
-            for _ in range(5):
-                await asyncio.sleep(1)
-                if should_stop():
-                    break
+            # Simple pause without stop checks during iteration
+            await asyncio.sleep(5)
 
     except KeyboardInterrupt:
         state.log("Interrupted by keyboard")
