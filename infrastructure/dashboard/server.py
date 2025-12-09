@@ -100,6 +100,16 @@ async def patterns(request: Request):
     )
 
 
+@app.get("/sound", response_class=HTMLResponse)
+async def sound(request: Request):
+    """Sound generator page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="sound.html",
+        context={},
+    )
+
+
 @app.get("/api/state")
 async def api_state():
     """API endpoint for state (for polling)."""
