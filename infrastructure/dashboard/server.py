@@ -90,6 +90,16 @@ async def dashboard(request: Request):
     )
 
 
+@app.get("/patterns", response_class=HTMLResponse)
+async def patterns(request: Request):
+    """Pattern generator page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="patterns.html",
+        context={},
+    )
+
+
 @app.get("/api/state")
 async def api_state():
     """API endpoint for state (for polling)."""

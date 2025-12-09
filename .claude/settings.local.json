@@ -1,0 +1,17 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker build:*)",
+      "Bash(docker run:*)",
+      "Bash(docker logs:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Skill(memory-keeper)",
+      "Bash(./tools/warmup.sh:*)",
+      "Bash(./start.sh:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
