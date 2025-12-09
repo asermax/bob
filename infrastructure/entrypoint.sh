@@ -46,7 +46,7 @@ case "$MODE" in
     dashboard)
         echo "Starting dashboard on port 3141..."
         cd /bob/infrastructure
-        exec uvicorn dashboard.server:app --host 0.0.0.0 --port 3141
+        exec uvicorn dashboard.server:app --host 0.0.0.0 --port 3141 --reload
         ;;
 
     both)
@@ -54,7 +54,7 @@ case "$MODE" in
 
         # Start dashboard in background
         cd /bob/infrastructure
-        uvicorn dashboard.server:app --host 0.0.0.0 --port 3141 &
+        uvicorn dashboard.server:app --host 0.0.0.0 --port 3141 --reload &
         DASHBOARD_PID=$!
 
         # Give dashboard a moment to start
