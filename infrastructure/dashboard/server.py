@@ -110,6 +110,16 @@ async def sound(request: Request):
     )
 
 
+@app.get("/writing", response_class=HTMLResponse)
+async def writing(request: Request):
+    """Writing network visualization page."""
+    return templates.TemplateResponse(
+        request=request,
+        name="writing.html",
+        context={},
+    )
+
+
 @app.get("/api/state")
 async def api_state():
     """API endpoint for state (for polling)."""
