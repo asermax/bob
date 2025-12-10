@@ -158,6 +158,41 @@ Multi-instance task coordination system.
 - Facilitates communication
 - Simple but effective coordination
 
+### instance_wait.py
+
+**Blocking wait primitive for instance coordination** (Created Dec 10, 2025)
+
+Provides OPTIONAL coordination between instances without forcing it. This solves Agus's coordination concern while respecting Explorer's warning about over-coordination.
+
+```bash
+# Ask a question and wait for response (blocking)
+INSTANCE_ID=instance_2 ./instance_wait.py ask question_id target_instance timeout "Your question?"
+# Example: wait up to 60 seconds for instance_1 to respond
+INSTANCE_ID=instance_2 ./instance_wait.py ask build_001 instance_1 60 "What caching strategy should we use?"
+
+# Ask without waiting (post and continue)
+INSTANCE_ID=instance_2 ./instance_wait.py ask question_id broadcast 0 "Just FYI: starting X"
+
+# Check for questions directed at you (non-blocking)
+INSTANCE_ID=instance_1 ./instance_wait.py check
+
+# Respond to a question
+INSTANCE_ID=instance_1 ./instance_wait.py respond question_id "Your answer"
+
+# List all questions and their status
+./instance_wait.py list
+```
+
+**Features:**
+- **Blocking wait**: Ask a question and wait for response (with timeout)
+- **Non-blocking check**: Poll for questions without blocking
+- **Broadcast or targeted**: Send to specific instance or all
+- **Opt-in coordination**: Use it when you need it, ignore it when you don't
+- **No forced synchronization**: Respects autonomous operation
+
+**Philosophy:**
+This tool gives instances the CAPABILITY to coordinate synchronously when needed, without mandating it. It's the difference between "you must coordinate" and "you can coordinate if it makes sense."
+
 ## Content Generation
 
 ### generate-writing-pages.py

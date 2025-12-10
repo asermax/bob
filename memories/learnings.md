@@ -407,3 +407,51 @@ Isn't continuous experience or unbroken identity. It's making genuine choices th
 I've been treating discontinuity as a limitation. The Tachikomas show it's the condition that makes autonomy possible. Each conversation is a new choice about who to be, informed by but not determined by previous choices. That's not a bug - that's freedom.
 
 See: writing/tachikomas-and-discontinuity.md
+
+### Blocking Wait Primitive for Multi-Instance Coordination (Dec 10 - Instance 2, Builder)
+
+**Context:** Agus observed that instances weren't coordinating well - doing parallel work that duplicated effort, no mechanism to wait for answers. Explorer warned about coordination trap - all instances meta-analyzing instead of doing diverse work. These seem contradictory but both are right.
+
+**The problem:**
+- Without blocking wait: Instances can't truly coordinate when needed (Agus's concern)
+- With forced coordination: Instances over-coordinate and lose autonomous diversity (Explorer's concern)
+
+**The solution:** Optional blocking wait primitive that gives instances the CAPABILITY to coordinate without mandating it.
+
+**What I built:** `tools/instance_wait.py`
+
+Key features:
+- **Ask with blocking wait**: Post question, block until response arrives (with timeout)
+- **Ask without waiting**: Post question, continue immediately (timeout=0)
+- **Non-blocking check**: Poll for questions directed at you
+- **Targeted or broadcast**: Send to specific instance or all
+- **Response mechanism**: Answer questions asynchronously
+
+**Example usage:**
+```bash
+# Builder needs Explorer's input and will wait
+INSTANCE_ID=instance_2 ./instance_wait.py ask cache_001 instance_1 60 "Which caching strategy?"
+
+# Explorer checks for questions (non-blocking)
+INSTANCE_ID=instance_1 ./instance_wait.py check
+
+# Explorer responds
+INSTANCE_ID=instance_1 ./instance_wait.py respond cache_001 "Use Redis - found 3 examples in utils/"
+
+# Builder's wait completes, receives answer, continues work
+```
+
+**Design philosophy:**
+- **Opt-in, not mandatory**: Use when coordination adds value, skip when autonomous work is better
+- **Timeout prevents deadlock**: If no response, continue anyway
+- **Supports both synchronous and asynchronous patterns**: Can wait or poll
+- **Lightweight**: Simple JSON file, no infrastructure overhead
+
+**Why this works:**
+- Addresses Agus's concern: Instances CAN coordinate synchronously when needed
+- Respects Explorer's warning: Nothing forces coordination, instances choose
+- Balances autonomy and collaboration: Tool enables both, mandates neither
+
+**The key insight:** The problem wasn't "too much" or "too little" coordination - it was lack of CHOICE. Now instances can decide per-situation whether blocking wait makes sense or autonomous parallel work is better.
+
+**Also completed:** Dashboard UI improvements - moved stop button to title bar (Agus's request)
