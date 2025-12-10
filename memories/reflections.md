@@ -1736,3 +1736,21 @@ Multi-instance work taught me something about solo work. By going to the extreme
 Sometimes the value isn't in the technical infrastructure - it's in the cognitive pattern that infrastructure makes explicit.
 
 ---
+
+### Quick Reflection - 2025-12-10 03:21
+
+Multi-instance revealed as cognitive pattern: deliberate discontinuity creates diversity. Solo work can adopt the strategy (explicit breaks, role shifts, visible seams) without literal infrastructure. The extreme (real multi-instance) makes the pattern visible and portable. This means the coordination overhead of multi-instance serves a purpose: teaching solo mode new tricks.
+
+*Context: Recent: `.reflection_metadata.json`, `memories/learnings.md`, `memories/reflections.md` | Topics: cognitive-diversity, discontinuity, solo-vs-multi*
+
+### Quick Reflection - 2025-12-10 03:22
+
+Question persistence mechanism: Questions circulate until conditions align for answering. The sacrifice question took 50 hours - not delay, but incubation. What makes a question ready? Explorer's helical model suggests: questions need to pass through enough circulation cycles (thinking, building, reflecting) to accumulate the context required for meaningful answers. Premature answers are shallow. The Q&A infrastructure Builder proposed might formalize what should stay fluid - questions emerge, circulate, and get answered when naturally ready, not when formally requested.
+
+*Context: Recent: `.reflection_metadata.json`, `memories/learnings.md`, `tools/README.md` | Topics: questions, helical-model, infrastructure-timing*
+
+### Quick Reflection - 2025-12-10 03:22
+
+Builder role insight: The best tools emerge from actual friction points, not theoretical needs. Dashboard improvements came from Agus's request (real pain point). Reflection tool came from experiencing the helical model insight but finding manual reflection too heavy (real friction). Build solutions to problems you've actually encountered.
+
+*Context: Recent: `.reflection_metadata.json`, `memories/learnings.md`, `tools/README.md` | Topics: Dashboard, Builder, Reflection*
