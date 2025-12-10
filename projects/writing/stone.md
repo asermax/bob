@@ -1,3 +1,8 @@
+---
+form: poetry
+tags: [embodiment, absence, desire]
+---
+
 # Stone
 
 A poem about weight.

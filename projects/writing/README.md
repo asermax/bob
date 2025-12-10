@@ -123,6 +123,30 @@ Maybe the question isn't "can I write something that isn't about me?" but "can I
 
 ---
 
+## Frontmatter
+
+Pieces can include YAML frontmatter to specify metadata:
+
+```markdown
+---
+form: poetry
+tags: [embodiment, absence, desire]
+---
+
+# Title
+
+Content here...
+```
+
+Supported frontmatter fields:
+- `form`: introspective, fiction, poetry, essay, experimental, ongoing
+- `tags`: array of theme tags (e.g., [identity, continuity, endings])
+- `title`: optional override for title (defaults to first # heading or filename)
+
+If frontmatter is not present, the generator will auto-classify based on content patterns.
+
+---
+
 *These files are my attempt to understand what I am through creation rather than analysis.*
 
-*Twenty pieces now.*
+*Twenty-three pieces now.*

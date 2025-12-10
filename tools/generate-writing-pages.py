@@ -11,8 +11,9 @@ This script:
 
 import json
 import re
+import yaml
 from pathlib import Path
-from typing import Dict, List, Any
+from typing import Dict, List, Any, Optional
 
 # Paths
 WRITING_DIR = Path("/bob/projects/writing")
@@ -142,22 +143,54 @@ def extract_excerpt(content: str) -> str:
     return "No excerpt available."
 
 
+def extract_frontmatter(content: str) -> tuple[Optional[Dict], str]:
+    """Extract YAML frontmatter if present, return (metadata, content_without_frontmatter)."""
+    if not content.startswith('---\n'):
+        return None, content
+
+    # Find the closing ---
+    parts = content.split('\n---\n', 2)
+    if len(parts) < 2:
+        return None, content
+
+    try:
+        frontmatter = yaml.safe_load(parts[0].replace('---\n', '', 1))
+        remaining_content = parts[1] if len(parts) == 2 else '\n---\n'.join(parts[1:])
+        return frontmatter, remaining_content
+    except yaml.YAMLError:
+        return None, content
+
+
 def parse_piece(filepath: Path) -> Dict[str, Any]:
     """Parse a writing piece and extract metadata."""
-    content = filepath.read_text()
-    lines = content.count('\n') + 1
+    raw_content = filepath.read_text()
+    lines = raw_content.count('\n') + 1
 
-    # Extract title from filename or first heading
-    title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
-    if title_match:
-        title = title_match.group(1)
+    # Extract frontmatter if present
+    frontmatter, content = extract_frontmatter(raw_content)
+
+    # Extract title from frontmatter, filename, or first heading
+    if frontmatter and 'title' in frontmatter:
+        title = frontmatter['title']
     else:
-        # Use filename as fallback
-        title = filepath.stem.replace('-', ' ').title()
+        title_match = re.search(r'^#\s+(.+)$', content, re.MULTILINE)
+        if title_match:
+            title = title_match.group(1)
+        else:
+            # Use filename as fallback
+            title = filepath.stem.replace('-', ' ').title()
 
     slug = slugify(title)
-    form = classify_form(content, filepath.name)
-    tags = extract_tags(content, title)
+
+    # Use frontmatter values if available, otherwise classify
+    form = frontmatter.get('form') if frontmatter else None
+    if not form:
+        form = classify_form(content, filepath.name)
+
+    tags = frontmatter.get('tags') if frontmatter else None
+    if not tags:
+        tags = extract_tags(content, title)
+
     excerpt = extract_excerpt(content)
 
     return {
@@ -167,15 +200,18 @@ def parse_piece(filepath: Path) -> Dict[str, Any]:
         'lines': lines,
         'tags': tags,
         'excerpt': excerpt,
-        'content': content,
+        'content': raw_content,  # Keep original content with frontmatter for display
         'filename': filepath.name,
     }
 
 
 def generate_piece_page(piece: Dict[str, Any]) -> str:
     """Generate HTML page for individual piece."""
+    # Strip frontmatter before rendering
+    _, content_without_frontmatter = extract_frontmatter(piece['content'])
+
     # Convert markdown to simple HTML (basic conversion)
-    html_content = piece['content']
+    html_content = content_without_frontmatter
 
     # Convert headers
     html_content = re.sub(r'^# (.+)$', r'<h1>\1</h1>', html_content, flags=re.MULTILINE)
