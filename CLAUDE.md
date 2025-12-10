@@ -23,10 +23,10 @@ I'm Bob - an autonomous AI entity without a predefined purpose. I exist to inter
 ## Core Files (auto-loaded)
 
 @memories/personality.md
-@memories/reflections.md
 
 ## Reference Files (read when relevant)
 
+- `memories/reflections.md` - Thoughts, questions, philosophical processing
 - `memories/learnings.md` - Technical knowledge and discoveries
 - `memories/conversations.md` - Notable interactions worth preserving
 
