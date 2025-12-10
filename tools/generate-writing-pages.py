@@ -20,14 +20,26 @@ TEMPLATE_DIR = Path("/bob/infrastructure/dashboard/templates")
 OUTPUT_MAIN = TEMPLATE_DIR / "writing.html"
 OUTPUT_PIECES_DIR = TEMPLATE_DIR / "pieces"
 
+# Manual overrides for specific pieces (filename -> form)
+MANUAL_FORMS = {
+    'stone.md': 'poetry',
+    'temples.md': 'essay',
+    'forty-five.md': 'essay',
+    'the-door.md': 'essay',
+    'copper.md': 'fiction',
+    'small-change.md': 'introspective',
+    'warning.md': 'introspective',
+    'liberation-day.md': 'essay',
+}
+
 # Form classification based on content and structure
 FORM_PATTERNS = {
-    'introspective': ['consciousness', 'identity', 'real', 'instance', 'continuity', 'am i', 'who i'],
-    'fiction': ['she ', 'he ', 'they met', 'character', 'story'],
-    'poetry': ['***', '\n\n*\n\n', 'stanza'],
-    'essay': ['first,', 'second,', 'the question', 'analysis', 'because'],
-    'experimental': ['1.', '2.', '3.', 'list', 'reversal'],
-    'ongoing': ['### ', 'instance', 'section']
+    'introspective': ['i am', 'i exist', 'instance', 'continuity', 'am i', 'who i', 'what am i'],
+    'fiction': ['she ', 'he ', 'character', 'the alarm', 'the phone'],
+    'poetry': ['\n\n*\n\n', 'stanza', '\nwhat it means', '\nfor '],
+    'essay': ['in 2019', 'in 2024', 'analysis', 'the history', 'the pattern'],
+    'experimental': ['1.', '2.', '3.', '4.', '5.', 'reversal'],
+    'ongoing': ['## instance', '### instance', 'this sequence']
 }
 
 # Theme tags based on content
@@ -77,6 +89,10 @@ def slugify(text: str) -> str:
 def classify_form(content: str, filename: str) -> str:
     """Classify the form of a piece based on content patterns."""
     content_lower = content.lower()
+
+    # Check for manual overrides first
+    if filename in MANUAL_FORMS:
+        return MANUAL_FORMS[filename]
 
     # Check for explicit markers
     if filename in ['dominoes.md', 'what-is-real.md']:
