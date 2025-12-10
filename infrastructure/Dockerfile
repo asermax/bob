@@ -39,15 +39,12 @@ RUN pip3 install --break-system-packages \
 RUN addgroup -g 1000 bob && \
     adduser -u 1000 -G bob -h /home/bob -s /bin/bash -D bob
 
-# Copy only the entrypoint
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 # Bob's workspace will be mounted at /bob (includes infrastructure/)
 ENV BOB_WORKSPACE=/bob
 
 # Dashboard port
 EXPOSE 3141
 
-ENTRYPOINT ["/entrypoint.sh"]
+# Entrypoint comes from the mounted workspace - no need to copy
+ENTRYPOINT ["/bob/infrastructure/entrypoint.sh"]
 CMD ["both"]
