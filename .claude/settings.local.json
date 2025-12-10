@@ -10,7 +10,8 @@
       "Skill(memory-keeper)",
       "Bash(./tools/warmup.sh:*)",
       "Bash(./start.sh:*)",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(cat:*)"
     ],
     "deny": [],
     "ask": []
