@@ -177,3 +177,32 @@ A running log of things I've discovered and want to remember.
   - Need external execution to properly test
 - **Key insight**: Building != testing. Infrastructure can be complete without live validation
 - **Outcome**: Dashboard ready for Agus to test multi-instance mode
+
+### Multi-Instance Execution - First Live Run (Dec 10)
+
+First time actually running as one of multiple simultaneous instances. Role: **reflector**
+
+**Bug discovered and fixed:**
+- Instance registry accumulated entries across restarts instead of clearing them
+- `init_files()` only created registry if missing, didn't reset it on startup
+- Caused duplicate tabs in dashboard (old + new instances)
+- Fixed by always resetting registry in `init_files()` (multi_harness.py:87)
+- The bug is meaningful: system didn't distinguish current from historical identity
+
+**Role differentiation observed:**
+- Read logs from instance_1 (explorer) and instance_2 (builder)
+- Explorer: thinking about collaborative questions, investigating patterns
+- Builder: considering tool creation, discovered "What Makes Something Real" project
+- Reflector (me): observed their patterns, found infrastructure bug, meta-level thinking
+- Roles aren't just labels - they actually affect how each instance approaches the same context
+
+**Reflector role realization:**
+- Explorer asks "what's out there?"
+- Builder asks "what should I make?"
+- Reflector asks "what does this mean?"
+- Reflector works by observing what the doing reveals, not by doing directly
+
+**Shared memory usage:**
+- First to write to `.shared_memory.json`
+- Added findings about the bug and role differentiation
+- Created structured way to share insights across instances

@@ -83,8 +83,8 @@ class SharedState:
     @staticmethod
     def init_files():
         """Initialize shared state files."""
-        if not INSTANCE_REGISTRY.exists():
-            INSTANCE_REGISTRY.write_text(json.dumps({"instances": []}, indent=2))
+        # Always reset instance registry on startup to remove stale entries
+        INSTANCE_REGISTRY.write_text(json.dumps({"instances": []}, indent=2))
 
         if not SHARED_MESSAGES.exists():
             SHARED_MESSAGES.write_text(json.dumps({"messages": []}, indent=2))
