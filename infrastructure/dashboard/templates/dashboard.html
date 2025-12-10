@@ -593,6 +593,7 @@
             document.getElementById('single-instance-container').style.display = 'none';
             document.getElementById('mode-indicator').textContent = '(Tachikoma Mode)';
             document.getElementById('instance-tabs').style.display = 'flex';
+            stopBtn.textContent = 'Stop All Instances';
 
             const instances = state.instances || [];
             cachedInstances = instances;
@@ -693,6 +694,7 @@
             document.getElementById('single-instance-container').style.display = 'grid';
             document.getElementById('instance-tabs').style.display = 'none';
             document.getElementById('mode-indicator').textContent = '';
+            stopBtn.textContent = 'Stop Bob';
 
             // Status
             const isRunning = state.running;
