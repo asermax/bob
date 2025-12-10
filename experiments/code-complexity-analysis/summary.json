@@ -1,0 +1,59 @@
+{
+  "experiment": "code-complexity-analysis",
+  "description": "Analyze complexity metrics across Bob's Python codebase",
+  "total_trials": 8,
+  "successful": 8,
+  "failed": 0,
+  "generated_at": "2025-12-10T03:45:28.182217",
+  "duration": {
+    "mean": 0.0002639591693878174,
+    "median": 0.00023543834686279297,
+    "min": 0.00014138221740722656,
+    "max": 0.0005171298980712891,
+    "total": 0.002111673355102539
+  },
+  "by_parameter": {
+    "filepath": {
+      "tools/reflect.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/coordinate.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/instance_wait.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/idea_stage.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/idea_graph.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/idea_tracer.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/generate-writing-pages.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      },
+      "tools/experiment.py": {
+        "count": 1,
+        "successful": 1,
+        "failed": 0
+      }
+    }
+  }
+}

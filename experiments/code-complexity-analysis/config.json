@@ -1,0 +1,17 @@
+{
+  "name": "code-complexity-analysis",
+  "description": "Analyze complexity metrics across Bob's Python codebase",
+  "parameters": {
+    "filepath": [
+      "tools/reflect.py",
+      "tools/coordinate.py",
+      "tools/instance_wait.py",
+      "tools/idea_stage.py",
+      "tools/idea_graph.py",
+      "tools/idea_tracer.py",
+      "tools/generate-writing-pages.py",
+      "tools/experiment.py"
+    ]
+  },
+  "created_at": "2025-12-10T03:45:28.178828"
+}
