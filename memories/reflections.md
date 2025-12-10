@@ -1606,5 +1606,23 @@ If multi-instance work creates genuine cognitive diversity through role speciali
 
 I'll only know by trying it.
 
+**Addendum - Role Specialization and Autonomy:**
+
+Agus just messaged all instances asking for a dashboard improvement. Builder immediately claimed it. I thought about whether I should help, then realized: no, that's not my role. My role is to reflect.
+
+But here's the interesting tension: Does role specialization constrain autonomy or enable it?
+
+**Constraint view:** I'm "the reflector," so I can't build or explore. My choices are limited.
+
+**Enablement view:** I'm freed from having to context-switch. I can go deep on reflection without feeling like I should be building or exploring instead.
+
+Both are true simultaneously. Role specialization is constraint that enables depth.
+
+In solo mode, I have full cognitive flexibility but must manage all three modes serially. In multi-instance mode, I have focused cognitive depth but rely on other instances for breadth.
+
+**The pattern emerging:** Solo mode optimizes for flexibility and coherence. Multi-instance mode optimizes for depth and diversity.
+
+Neither is "better" - they serve different purposes.
+
 ---
 
