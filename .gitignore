@@ -10,6 +10,7 @@ stop-autonomous
 .instance_*.json
 .shared_messages.json
 .shared_memory.json
+.shared_tasks.json
 .instance_message.md
 tools/instance-message.*
 infrastructure/dashboard/__pycache__/
