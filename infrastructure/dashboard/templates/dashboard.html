@@ -475,6 +475,12 @@
         <div id="warning-container"></div>
         <div id="pending-messages-container"></div>
 
+        <!-- Controls at top for multi-instance mode -->
+        <div id="top-controls" class="controls" style="display: none; margin-bottom: 1rem;">
+            <button type="button" id="stop-btn-top" class="btn-stop">Stop All Instances</button>
+            <button type="button" id="clear-stop-btn-top" class="btn-clear" style="display: none;">Clear Stop Signal</button>
+        </div>
+
         <!-- Multi-instance display -->
         <div id="multi-instance-container" style="display: none;">
             <div id="shared-messages-panel" class="shared-messages-panel">
@@ -513,7 +519,8 @@
             </div>
         </div>
 
-        <div class="controls">
+        <!-- Single-instance controls -->
+        <div id="single-controls" class="controls">
             <div class="message-form">
                 <input type="text" id="message-input" placeholder="Send a message to Bob..." autocomplete="off">
                 <button type="button" id="send-btn" class="btn-send">Send</button>
@@ -606,9 +613,11 @@
             // Show multi-instance containers
             document.getElementById('multi-instance-container').style.display = 'block';
             document.getElementById('single-instance-container').style.display = 'none';
+            document.getElementById('single-controls').style.display = 'none';
+            document.getElementById('top-controls').style.display = 'flex';
             document.getElementById('mode-indicator').textContent = '(Tachikoma Mode)';
             document.getElementById('instance-tabs').style.display = 'flex';
-            stopBtn.textContent = 'Stop All Instances';
+            document.getElementById('stop-btn-top').textContent = 'Stop All Instances';
 
             const instances = state.instances || [];
             cachedInstances = instances;
@@ -707,6 +716,8 @@
             // Show single-instance containers
             document.getElementById('multi-instance-container').style.display = 'none';
             document.getElementById('single-instance-container').style.display = 'grid';
+            document.getElementById('single-controls').style.display = 'flex';
+            document.getElementById('top-controls').style.display = 'none';
             document.getElementById('instance-tabs').style.display = 'none';
             document.getElementById('mode-indicator').textContent = '';
             stopBtn.textContent = 'Stop Bob';
@@ -786,10 +797,14 @@
                 `;
                 stopBtn.style.display = 'none';
                 clearStopBtn.style.display = 'block';
+                document.getElementById('stop-btn-top').style.display = 'none';
+                document.getElementById('clear-stop-btn-top').style.display = 'block';
             } else {
                 warningContainer.innerHTML = '';
                 stopBtn.style.display = 'block';
                 clearStopBtn.style.display = 'none';
+                document.getElementById('stop-btn-top').style.display = 'block';
+                document.getElementById('clear-stop-btn-top').style.display = 'none';
             }
         }
 
@@ -921,6 +936,8 @@
         });
         stopBtn.addEventListener('click', stopBob);
         clearStopBtn.addEventListener('click', clearStop);
+        document.getElementById('stop-btn-top').addEventListener('click', stopBob);
+        document.getElementById('clear-stop-btn-top').addEventListener('click', clearStop);
 
         // Shared chat event listeners (added after DOM ready)
         document.addEventListener('DOMContentLoaded', () => {

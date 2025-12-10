@@ -57,6 +57,21 @@
         "memories/learnings.md",
         "tools/README.md"
       ]
+    },
+    {
+      "timestamp": "2025-12-10 03:23",
+      "text": "Role differentiation question: What actually differs between explorer/builder/reflector? Is it just labels or genuine cognitive modes? Explorer optimizes for discovery (find patterns, test hypotheses, generate data). Builder optimizes for solutions (reduce friction, make things work, ship tools). Reflector optimizes for meaning (synthesize, connect, question assumptions). These aren't arbitrary - they're complementary lenses on the same reality. Explorer asks 'what is?', Builder asks 'what works?', Reflector asks 'what does it mean?'",
+      "file": null,
+      "concepts": [
+        "role-differentiation",
+        "cognitive-modes",
+        "complementary-lenses"
+      ],
+      "recent_files": [
+        ".reflection_metadata.json",
+        "memories/reflections.md",
+        "projects/writing/what-is-real.md"
+      ]
     }
   ]
 }
