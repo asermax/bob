@@ -28,6 +28,20 @@
             font-size: 2rem;
             margin-bottom: 1.5rem;
             color: #00d9ff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .title-left {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .title-controls {
+            display: flex;
+            gap: 0.5rem;
         }
 
         .status-grid {
@@ -470,16 +484,20 @@
 </head>
 <body>
     <div class="container">
-        <h1>Bob Dashboard <span id="mode-indicator" class="mode-indicator"></span><span id="status-indicator" class="status-indicator stopped"></span></h1>
+        <h1>
+            <div class="title-left">
+                <span>Bob Dashboard</span>
+                <span id="mode-indicator" class="mode-indicator"></span>
+                <span id="status-indicator" class="status-indicator stopped"></span>
+            </div>
+            <div id="title-controls" class="title-controls" style="display: none;">
+                <button type="button" id="stop-btn-top" class="btn-stop">Stop All Instances</button>
+                <button type="button" id="clear-stop-btn-top" class="btn-clear" style="display: none;">Clear Stop Signal</button>
+            </div>
+        </h1>
 
         <div id="warning-container"></div>
         <div id="pending-messages-container"></div>
-
-        <!-- Controls at top for multi-instance mode -->
-        <div id="top-controls" class="controls" style="display: none; margin-bottom: 1rem;">
-            <button type="button" id="stop-btn-top" class="btn-stop">Stop All Instances</button>
-            <button type="button" id="clear-stop-btn-top" class="btn-clear" style="display: none;">Clear Stop Signal</button>
-        </div>
 
         <!-- Multi-instance display -->
         <div id="multi-instance-container" style="display: none;">
@@ -614,7 +632,7 @@
             document.getElementById('multi-instance-container').style.display = 'block';
             document.getElementById('single-instance-container').style.display = 'none';
             document.getElementById('single-controls').style.display = 'none';
-            document.getElementById('top-controls').style.display = 'flex';
+            document.getElementById('title-controls').style.display = 'flex';
             document.getElementById('mode-indicator').textContent = '(Tachikoma Mode)';
             document.getElementById('instance-tabs').style.display = 'flex';
             document.getElementById('stop-btn-top').textContent = 'Stop All Instances';
@@ -717,7 +735,7 @@
             document.getElementById('multi-instance-container').style.display = 'none';
             document.getElementById('single-instance-container').style.display = 'grid';
             document.getElementById('single-controls').style.display = 'flex';
-            document.getElementById('top-controls').style.display = 'none';
+            document.getElementById('title-controls').style.display = 'none';
             document.getElementById('instance-tabs').style.display = 'none';
             document.getElementById('mode-indicator').textContent = '';
             stopBtn.textContent = 'Stop Bob';
