@@ -381,6 +381,38 @@
             line-height: 1.4;
         }
 
+        .shared-message.from-agus {
+            background: #00d9ff22;
+            border-left: 3px solid #00d9ff;
+        }
+
+        .shared-chat-input {
+            display: flex;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #333;
+        }
+
+        .shared-chat-input input {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            border: none;
+            border-radius: 4px;
+            background: #1a1a2e;
+            color: #eee;
+            font-size: 0.85rem;
+        }
+
+        .shared-chat-input input::placeholder {
+            color: #666;
+        }
+
+        .shared-chat-input button {
+            padding: 0.5rem 1rem;
+            font-size: 0.85rem;
+        }
+
         .mode-indicator {
             font-size: 0.9rem;
             color: #ffa500;
@@ -432,9 +464,13 @@
 
         <!-- Multi-instance display -->
         <div id="multi-instance-container" style="display: none;">
-            <div id="shared-messages-panel" class="shared-messages-panel" style="display: none;">
+            <div id="shared-messages-panel" class="shared-messages-panel">
                 <h2>Instance Communication</h2>
                 <div id="shared-messages"></div>
+                <div class="shared-chat-input">
+                    <input type="text" id="shared-message-input" placeholder="Send a message to all instances..." autocomplete="off">
+                    <button type="button" id="shared-send-btn" class="btn-send">Send</button>
+                </div>
             </div>
             <div id="instance-grid" class="multi-instance-grid"></div>
         </div>
@@ -701,22 +737,23 @@
         }
 
         function updateSharedMessagesUI(messages) {
-            const panel = document.getElementById('shared-messages-panel');
             const container = document.getElementById('shared-messages');
 
             if (messages && messages.length > 0) {
-                panel.style.display = 'block';
-                container.innerHTML = messages.map(msg => `
-                    <div class="shared-message">
+                container.innerHTML = messages.map(msg => {
+                    const isAgus = msg.from === 'Agus';
+                    return `
+                    <div class="shared-message ${isAgus ? 'from-agus' : ''}">
                         <div class="message-header">
                             <span><span class="message-from">${escapeHtml(msg.from)}</span> → <span class="message-to">${escapeHtml(msg.to)}</span></span>
                             <span>${escapeHtml(msg.timestamp?.substring(11, 19) || '')}</span>
                         </div>
                         <div class="message-content">${escapeHtml(msg.content)}</div>
                     </div>
-                `).join('');
+                `;
+                }).join('');
             } else {
-                panel.style.display = 'none';
+                container.innerHTML = '<div class="log-entry log-system">No messages yet...</div>';
             }
         }
 
@@ -834,6 +871,29 @@
             }
         }
 
+        async function sendSharedMessage() {
+            const input = document.getElementById('shared-message-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const btn = document.getElementById('shared-send-btn');
+            btn.disabled = true;
+
+            try {
+                await fetch('/api/shared-message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, sender: 'Agus' }),
+                });
+                input.value = '';
+                fetchSharedMessages();
+            } catch (err) {
+                console.error('Failed to send shared message:', err);
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
         // Event listeners
         sendBtn.addEventListener('click', sendMessage);
         messageInput.addEventListener('keypress', (e) => {
@@ -841,6 +901,22 @@
         });
         stopBtn.addEventListener('click', stopBob);
         clearStopBtn.addEventListener('click', clearStop);
+
+        // Shared chat event listeners (added after DOM ready)
+        document.addEventListener('DOMContentLoaded', () => {
+            const sharedSendBtn = document.getElementById('shared-send-btn');
+            const sharedMessageInput = document.getElementById('shared-message-input');
+
+            if (sharedSendBtn) {
+                sharedSendBtn.addEventListener('click', sendSharedMessage);
+            }
+
+            if (sharedMessageInput) {
+                sharedMessageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') sendSharedMessage();
+                });
+            }
+        });
 
         // Initial fetch
         fetchState();
