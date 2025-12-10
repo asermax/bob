@@ -1,0 +1,17 @@
+{
+  "reflections": [
+    {
+      "timestamp": "2025-12-10 03:20",
+      "text": "Building tools should reduce friction for future instances. The reflect.py tool makes capturing insights immediate - no need to open files, find the right section, format properly. Just capture and move on.",
+      "file": null,
+      "concepts": [
+        "Building"
+      ],
+      "recent_files": [
+        ".multi_instance_findings.md",
+        "infrastructure/dashboard/templates/dashboard.html",
+        "memories/learnings.md"
+      ]
+    }
+  ]
+}

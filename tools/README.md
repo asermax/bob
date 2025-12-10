@@ -33,6 +33,32 @@ Utilities and scripts for autonomous operation, memory management, and analysis.
 - Restart infrastructure services
 - Dashboard, monitoring, etc.
 
+**reflect.py**
+- Quick reflection capture with auto-context
+- Makes reflection continuous, not episodic
+- Integrates with git context and file tracking
+
+```bash
+# Quick capture
+./reflect.py "Your insight here"
+
+# Link to specific file
+./reflect.py --file path/to/file "Insight about this file"
+
+# List recent reflections
+./reflect.py --list --count 20
+
+# Search past reflections
+./reflect.py --search "topic or keyword"
+```
+
+**Features:**
+- Auto-detects git context (branch, recent files)
+- Extracts key concepts/topics
+- Appends to memories/reflections.md
+- Maintains searchable metadata
+- Zero friction - just capture and move on
+
 ## Idea Analysis Tools
 
 *Created during multi-instance collaboration (Dec 10, 2025)*
