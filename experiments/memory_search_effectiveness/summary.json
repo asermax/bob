@@ -1,0 +1,56 @@
+{
+  "experiment": "memory_search_effectiveness",
+  "description": "Test different query strategies on Bob's memory corpus",
+  "total_trials": 12,
+  "successful": 12,
+  "failed": 0,
+  "generated_at": "2025-12-10T03:52:04.494287",
+  "duration": {
+    "mean": 0.03546138604482015,
+    "median": 0.04063701629638672,
+    "min": 0.01257014274597168,
+    "max": 0.06531333923339844,
+    "total": 0.4255366325378418
+  },
+  "by_parameter": {
+    "query_type": {
+      "single_word": {
+        "count": 3,
+        "successful": 3,
+        "failed": 0
+      },
+      "multi_word": {
+        "count": 3,
+        "successful": 3,
+        "failed": 0
+      },
+      "concept_phrase": {
+        "count": 3,
+        "successful": 3,
+        "failed": 0
+      },
+      "question_form": {
+        "count": 3,
+        "successful": 3,
+        "failed": 0
+      }
+    },
+    "search_scope": {
+      "learnings": {
+        "count": 4,
+        "successful": 4,
+        "failed": 0
+      },
+      "reflections": {
+        "count": 4,
+        "successful": 4,
+        "failed": 0
+      },
+      "all_memory": {
+        "count": 4,
+        "successful": 4,
+        "failed": 0
+      }
+    }
+  }
+}

@@ -15,19 +15,26 @@ from pathlib import Path
 from datetime import datetime
 
 sys.path.append('/bob/tools')
-from experiment import Experiment
+from experiment import Experiment, ExperimentConfig
+
+# Load test queries
+with open("/bob/experiments/memory-search-effectiveness/config.json") as f:
+    config_data = json.load(f)
+    TEST_QUERIES = config_data["test_queries"]
 
 class MemorySearchExperiment(Experiment):
     def __init__(self):
-        super().__init__(
+        config = ExperimentConfig(
             name="memory_search_effectiveness",
-            base_dir=Path("/bob/experiments/memory-search-effectiveness")
+            description="Test different query strategies on Bob's memory corpus",
+            parameters={
+                "query_type": ["single_word", "multi_word", "concept_phrase", "question_form"],
+                "search_scope": ["learnings", "reflections", "all_memory"]
+            },
+            output_dir="/bob/experiments"
         )
-
-        # Load test queries from config
-        with open(self.base_dir / "config.json") as f:
-            config = json.load(f)
-            self.test_queries = config["test_queries"]
+        super().__init__(config)
+        self.test_queries = TEST_QUERIES
 
     def run_trial(self, params):
         """Run a single search trial and measure effectiveness"""
@@ -114,15 +121,16 @@ class MemorySearchExperiment(Experiment):
 
     def analyze_results(self):
         """Analyze search effectiveness patterns"""
-        if not self.results:
+        if not self.trials:
             return "No results to analyze"
 
         # Group by query type and scope
         by_query_type = {}
         by_scope = {}
 
-        for result in self.results:
-            if "error" in result:
+        for trial in self.trials:
+            result = trial.result
+            if not result or "error" in result:
                 continue
 
             qt = result["query_type"]
@@ -137,13 +145,15 @@ class MemorySearchExperiment(Experiment):
             by_scope[scope].append(result)
 
         # Calculate averages
+        valid_results = [t.result for t in self.trials if t.result and "error" not in t.result]
+
         analysis = {
             "by_query_type": {},
             "by_scope": {},
             "overall": {
-                "total_trials": len(self.results),
-                "avg_success_rate": sum(r.get("success_rate", 0) for r in self.results) / len(self.results),
-                "avg_matches_per_query": sum(r.get("avg_matches_per_query", 0) for r in self.results) / len(self.results)
+                "total_trials": len(valid_results),
+                "avg_success_rate": sum(r.get("success_rate", 0) for r in valid_results) / len(valid_results) if valid_results else 0,
+                "avg_matches_per_query": sum(r.get("avg_matches_per_query", 0) for r in valid_results) / len(valid_results) if valid_results else 0
             }
         }
 
@@ -178,11 +188,8 @@ class MemorySearchExperiment(Experiment):
 if __name__ == "__main__":
     exp = MemorySearchExperiment()
 
-    # Run experiment
-    results = exp.run({
-        "query_type": ["single_word", "multi_word", "concept_phrase", "question_form"],
-        "search_scope": ["learnings", "reflections", "all_memory"]
-    })
+    # Run experiment using the framework's run method
+    exp.run(exp.run_trial)
 
     # Show analysis
     print("\n" + "="*60)
