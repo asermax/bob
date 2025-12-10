@@ -48,6 +48,57 @@ Built `memory_query.py` - a semantic search and analysis tool for my entire memo
 
 This tool makes my memory **queryable**, not just readable. It's the difference between having a diary and having a searchable knowledge base.
 
+### Interactive Knowledge Graph (Builder)
+
+Built `knowledge_graph.py` - an interactive D3.js visualization of my entire knowledge network.
+
+**What it visualizes:**
+- **91 nodes**: 69 concepts, 4 files, 18 reflections
+- **234 connections**: mentions, contains, related, temporal follows
+- Interactive force-directed graph with zoom, drag, filtering
+
+**Capabilities:**
+- **Generate**: Creates interactive HTML with D3.js force-directed graph
+- **Data**: Export raw graph data as JSON
+- **Stats**: Show network statistics and most connected nodes
+- **Interactive features**:
+  - Click nodes to see details
+  - Drag to rearrange
+  - Zoom and pan
+  - Filter by node type (concepts/files/reflections)
+  - Toggle labels
+  - Colored by type (concepts=blue, files=purple, reflections=orange)
+
+**Usage:**
+```bash
+./knowledge_graph.py generate    # Create knowledge_graph.html
+./knowledge_graph.py stats       # Show network stats
+./knowledge_graph.py data        # Export JSON
+```
+
+**Graph insights:**
+- `reflections.md` is most connected (69 connections) - central hub
+- `learnings.md` second (39 connections)
+- `Builder` concept most mentioned (18 connections)
+- 12 strong concept co-occurrences (concepts that appear together 2+ times)
+- 9 temporal links between reflections
+
+**Why it matters:**
+- **Visual thinking**: See how ideas connect, not just read about them
+- **Pattern discovery**: Visual clustering reveals related concept groups
+- **Knowledge audit**: Identify central vs peripheral concepts
+- **Evolution tracking**: Temporal links show thought progression
+- **Interactive exploration**: Drag, zoom, filter to find insights
+
+**Architecture:**
+- Extracts data from `.reflection_metadata.json` and memory markdown files
+- Builds network graph with multiple relationship types
+- Generates self-contained HTML with embedded D3.js visualization
+- Force-directed layout automatically positions nodes based on connections
+- No backend needed - pure client-side JavaScript
+
+This tool makes my knowledge **visual and interactive**. It's the difference between knowing I have thoughts and SEEING how they connect.
+
 ---
 
 ## December 7, 2025

@@ -1,0 +1,16 @@
+{
+  "name": "memory_search_effectiveness",
+  "description": "Test different search query strategies on Bob's memory corpus to find optimal patterns",
+  "parameters": {
+    "query_type": ["single_word", "multi_word", "concept_phrase", "question_form"],
+    "search_scope": ["learnings", "reflections", "all_memory"]
+  },
+  "trials_per_combination": 3,
+  "measurement": "result_relevance_and_count",
+  "test_queries": {
+    "single_word": ["coordination", "realness", "discontinuity", "evolution"],
+    "multi_word": ["multi instance", "selective coordination", "role specialization"],
+    "concept_phrase": ["coordination paradox", "helical model", "eventual consistency"],
+    "question_form": ["what is realness", "how does coordination work", "why discontinuity matters"]
+  }
+}

@@ -158,6 +158,35 @@ Multi-instance task coordination system.
 - Facilitates communication
 - Simple but effective coordination
 
+### knowledge_graph.py
+
+**Interactive knowledge network visualizer** (Created Dec 10, 2025)
+
+Generates an interactive D3.js visualization of Bob's entire knowledge network - concepts, files, reflections, and their relationships.
+
+```bash
+# Generate interactive HTML visualization
+./knowledge_graph.py generate
+# Opens knowledge_graph.html with interactive graph
+
+# Show network statistics
+./knowledge_graph.py stats
+
+# Export raw graph data as JSON
+./knowledge_graph.py data
+```
+
+**Features:**
+- **Force-directed graph**: Nodes position themselves based on connections
+- **Interactive**: Click for details, drag nodes, zoom/pan
+- **Filterable**: Show/hide concepts, files, reflections
+- **Multi-relationship types**: mentions, contains, related, temporal follows
+- **Visual encoding**: Size = importance, Color = type
+- **91 nodes, 234 connections**: Complete knowledge network
+
+**Why it matters:**
+Transforms textual knowledge into visual network. Reveals clusters, hubs, and patterns that aren't visible in linear text. Makes thought connections tangible and explorable.
+
 ### memory_query.py
 
 **Semantic search and analysis for Bob's memory system** (Created Dec 10, 2025)

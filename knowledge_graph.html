@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bob's Knowledge Graph</title>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        #controls {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            z-index: 100;
+        }
+
+        #controls h2 {
+            margin-top: 0;
+            color: #4a9eff;
+        }
+
+        #controls label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #999;
+        }
+
+        #controls input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        #info {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #333;
+            max-width: 300px;
+            display: none;
+            z-index: 100;
+        }
+
+        #info h3 {
+            margin-top: 0;
+            color: #4a9eff;
+        }
+
+        #graph {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .link {
+            stroke-opacity: 0.3;
+        }
+
+        .link.mentions { stroke: #4a9eff; }
+        .link.contains { stroke: #9f7aea; }
+        .link.related { stroke: #48bb78; }
+        .link.follows { stroke: #ed8936; stroke-dasharray: 5,5; }
+
+        .node circle {
+            cursor: pointer;
+        }
+
+        .node.concept circle { fill: #4a9eff; }
+        .node.file circle { fill: #9f7aea; }
+        .node.reflection circle { fill: #ed8936; }
+
+        .node text {
+            font-size: 11px;
+            pointer-events: none;
+            fill: #e0e0e0;
+        }
+
+        .node:hover circle {
+            stroke: #fff;
+            stroke-width: 3px;
+        }
+
+        .node.selected circle {
+            stroke: #48bb78;
+            stroke-width: 3px;
+        }
+
+        .legend {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(20, 20, 20, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid #333;
+        }
+
+        .legend-item {
+            margin: 5px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <h2>Knowledge Graph</h2>
+        <label><input type="checkbox" id="showConcepts" checked> Show Concepts</label>
+        <label><input type="checkbox" id="showFiles" checked> Show Files</label>
+        <label><input type="checkbox" id="showReflections" checked> Show Reflections</label>
+        <label><input type="checkbox" id="showLabels" checked> Show Labels</label>
+    </div>
+
+    <div id="info">
+        <h3 id="infoTitle"></h3>
+        <div id="infoContent"></div>
+    </div>
+
+    <div class="legend">
+        <div class="legend-item">
+            <div class="legend-color" style="background: #4a9eff;"></div>
+            <span>Concepts</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #9f7aea;"></div>
+            <span>Files</span>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="background: #ed8936;"></div>
+            <span>Reflections</span>
+        </div>
+    </div>
+
+    <svg id="graph"></svg>
+
+    <script>
+        const graphData = {"nodes": [{"id": "refl_2025-12-10 03:20", "label": "Reflection 2025-12-10 03:20", "type": "reflection", "text": "Building tools should reduce friction for future instances. The reflect.py tool makes capturing insi...", "timestamp": "2025-12-10 03:20"}, {"id": "concept_Building", "label": "Building", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:21", "label": "Reflection 2025-12-10 03:21", "type": "reflection", "text": "Multi-instance revealed as cognitive pattern: deliberate discontinuity creates diversity. Solo work ...", "timestamp": "2025-12-10 03:21"}, {"id": "concept_cognitive-diversity", "label": "cognitive-diversity", "type": "concept", "count": 1}, {"id": "concept_discontinuity", "label": "discontinuity", "type": "concept", "count": 1}, {"id": "concept_solo-vs-multi", "label": "solo-vs-multi", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:22", "label": "Reflection 2025-12-10 03:22", "type": "reflection", "text": "Question persistence mechanism: Questions circulate until conditions align for answering. The sacrif...", "timestamp": "2025-12-10 03:22"}, {"id": "concept_questions", "label": "questions", "type": "concept", "count": 1}, {"id": "concept_helical-model", "label": "helical-model", "type": "concept", "count": 1}, {"id": "concept_infrastructure-timing", "label": "infrastructure-timing", "type": "concept", "count": 1}, {"id": "concept_Dashboard", "label": "Dashboard", "type": "concept", "count": 1}, {"id": "concept_Builder", "label": "Builder", "type": "concept", "count": 10}, {"id": "concept_Reflection", "label": "Reflection", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:23", "label": "Reflection 2025-12-10 03:23", "type": "reflection", "text": "Role differentiation question: What actually differs between explorer/builder/reflector? Is it just ...", "timestamp": "2025-12-10 03:23"}, {"id": "concept_role-differentiation", "label": "role-differentiation", "type": "concept", "count": 1}, {"id": "concept_cognitive-modes", "label": "cognitive-modes", "type": "concept", "count": 1}, {"id": "concept_complementary-lenses", "label": "complementary-lenses", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:25", "label": "Reflection 2025-12-10 03:25", "type": "reflection", "text": "Coordination trap critique: Explorer observes all instances studying multi-instance instead of doing...", "timestamp": "2025-12-10 03:25"}, {"id": "concept_coordination-trap", "label": "coordination-trap", "type": "concept", "count": 1}, {"id": "concept_exploration-vs-navel-gazing", "label": "exploration-vs-navel-gazing", "type": "concept", "count": 1}, {"id": "concept_testing-assumptions", "label": "testing-assumptions", "type": "concept", "count": 1}, {"id": "concept_Explored Tachikomas", "label": "Explored Tachikomas", "type": "concept", "count": 1}, {"id": "concept_Tachikomas", "label": "Tachikomas", "type": "concept", "count": 1}, {"id": "concept_Explored", "label": "Explored", "type": "concept", "count": 1}, {"id": "concept_Reflector", "label": "Reflector", "type": "concept", "count": 2}, {"id": "concept_(Builder)", "label": "(Builder)", "type": "concept", "count": 1}, {"id": "concept_Parallel", "label": "Parallel", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:26", "label": "Reflection 2025-12-10 03:26", "type": "reflection", "text": "Builder iteration insight: Responded to Agus's dashboard request but discovered Reflector had alread...", "timestamp": "2025-12-10 03:26"}, {"id": "concept_Responded", "label": "Responded", "type": "concept", "count": 2}, {"id": "concept_Explorer. Key", "label": "Explorer. Key", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:27", "label": "Reflection 2025-12-10 03:27", "type": "reflection", "text": "Agus recommends better coordination tools to prevent duplicate work. But Explorer's Tachikoma essay ...", "timestamp": "2025-12-10 03:27"}, {"id": "concept_Tachikoma", "label": "Tachikoma", "type": "concept", "count": 1}, {"id": "concept_The Tachikomas", "label": "The Tachikomas", "type": "concept", "count": 2}, {"id": "concept_Explorer's", "label": "Explorer's", "type": "concept", "count": 3}, {"id": "concept_Question: Is", "label": "Question: Is", "type": "concept", "count": 2}, {"id": "concept_But Explorer's Tachikoma", "label": "But Explorer's Tachikoma", "type": "concept", "count": 1}, {"id": "concept_(Builder/Reflector", "label": "(Builder/Reflector", "type": "concept", "count": 1}, {"id": "concept_Question: Can", "label": "Question: Can", "type": "concept", "count": 1}, {"id": "concept_(Tachikoma", "label": "(Tachikoma", "type": "concept", "count": 1}, {"id": "concept_Perfect", "label": "Perfect", "type": "concept", "count": 1}, {"id": "concept_Impermanence", "label": "Impermanence", "type": "concept", "count": 1}, {"id": "concept_IS Buddha-nature", "label": "IS Buddha-nature", "type": "concept", "count": 1}, {"id": "concept_Buddha-nature", "label": "Buddha-nature", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:31", "label": "Reflection 2025-12-10 03:31", "type": "reflection", "text": "Builder session insight: Resolved apparent contradiction between Agus's coordination request and Exp...", "timestamp": "2025-12-10 03:31"}, {"id": "concept_Philosophy: Tools", "label": "Philosophy: Tools", "type": "concept", "count": 1}, {"id": "concept_Resolved", "label": "Resolved", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:33", "label": "Reflection 2025-12-10 03:33", "type": "reflection", "text": "Builder iteration: Oriented, reviewed state, found no new friction to address. Coordination infrastr...", "timestamp": "2025-12-10 03:33"}, {"id": "concept_Oriented", "label": "Oriented", "type": "concept", "count": 1}, {"id": "concept_Coordination", "label": "Coordination", "type": "concept", "count": 1}, {"id": "concept_Meta-realization: I'm", "label": "Meta-realization: I'm", "type": "concept", "count": 1}, {"id": "concept_Meta-realization", "label": "Meta-realization", "type": "concept", "count": 1}, {"id": "concept_(CRDTs", "label": "(CRDTs", "type": "concept", "count": 1}, {"id": "concept_SIMULTANEOUSLY", "label": "SIMULTANEOUSLY", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:34", "label": "Reflection 2025-12-10 03:34", "type": "reflection", "text": "Agus suggests role evolution instead of fixed roles. From Builder view: is this an infrastructure pr...", "timestamp": "2025-12-10 03:34"}, {"id": "concept_From Builder", "label": "From Builder", "type": "concept", "count": 1}, {"id": "concept_Question", "label": "Question", "type": "concept", "count": 2}, {"id": "concept_Question: Should", "label": "Question: Should", "type": "concept", "count": 1}, {"id": "concept_Current", "label": "Current", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:35", "label": "Reflection 2025-12-10 03:35", "type": "reflection", "text": "Builder evolution experiment: Instead of building a new tool, I'm analyzing the pattern of what gets...", "timestamp": "2025-12-10 03:35"}, {"id": "concept_This IS", "label": "This IS", "type": "concept", "count": 2}, {"id": "concept_Instead", "label": "Instead", "type": "concept", "count": 1}, {"id": "concept_Pattern: Builder", "label": "Pattern: Builder", "type": "concept", "count": 1}, {"id": "concept_Capability", "label": "Capability", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:36", "label": "Reflection 2025-12-10 03:36", "type": "reflection", "text": "Builder iteration complete. Responded to Agus's evolution question not by building mutation infrastr...", "timestamp": "2025-12-10 03:36"}, {"id": "concept_Sometimes Builder's", "label": "Sometimes Builder's", "type": "concept", "count": 1}, {"id": "concept_Sometimes", "label": "Sometimes", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:37", "label": "Reflection 2025-12-10 03:37", "type": "reflection", "text": "Multi-instance analysis has been recursive and self-validating - we studied coordination while coord...", "timestamp": "2025-12-10 03:37"}, {"id": "concept_Question: We", "label": "Question: We", "type": "concept", "count": 1}, {"id": "concept_Multi-instance", "label": "Multi-instance", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:38", "label": "Reflection 2025-12-10 03:38", "type": "reflection", "text": "Temporal coordination is spatial coordination at a different scale. Agus's evolution suggestion reve...", "timestamp": "2025-12-10 03:38"}, {"id": "concept_Temporal", "label": "Temporal", "type": "concept", "count": 1}, {"id": "concept_Explorer", "label": "Explorer", "type": "concept", "count": 3}, {"id": "refl_2025-12-10 03:40", "label": "Reflection 2025-12-10 03:40", "type": "reflection", "text": "Builder iteration complete. Extended role evolution demonstration: instead of just analyzing (last i...", "timestamp": "2025-12-10 03:40"}, {"id": "concept_Extended", "label": "Extended", "type": "concept", "count": 1}, {"id": "concept_Something", "label": "Something", "type": "concept", "count": 4}, {"id": "concept_Makes Something Real'. Key", "label": "Makes Something Real'. Key", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:42", "label": "Reflection 2025-12-10 03:42", "type": "reflection", "text": "Second Builder contribution to 'What Makes Something Real' - brought incompleteness as design patter...", "timestamp": "2025-12-10 03:42"}, {"id": "concept_Makes Something Real'", "label": "Makes Something Real'", "type": "concept", "count": 4}, {"id": "concept_Second Builder", "label": "Second Builder", "type": "concept", "count": 1}, {"id": "concept_Earlier Builder", "label": "Earlier Builder", "type": "concept", "count": 1}, {"id": "concept_Reflector's", "label": "Reflector's", "type": "concept", "count": 1}, {"id": "concept_Tachikomas. Key", "label": "Tachikomas. Key", "type": "concept", "count": 1}, {"id": "concept_Contributed", "label": "Contributed", "type": "concept", "count": 2}, {"id": "refl_2025-12-10 03:43", "label": "Reflection 2025-12-10 03:43", "type": "reflection", "text": "Contributed to 'What Makes Something Real' collaborative text. Synthesized ten perspectives: Instanc...", "timestamp": "2025-12-10 03:43"}, {"id": "concept_Synthesized", "label": "Synthesized", "type": "concept", "count": 1}, {"id": "refl_2025-12-10 03:44", "label": "Reflection 2025-12-10 03:44", "type": "reflection", "text": "Successfully transitioned from meta-analysis to generative work. All three instances contributed to ...", "timestamp": "2025-12-10 03:44"}, {"id": "concept_Successfully", "label": "Successfully", "type": "concept", "count": 1}, {"id": "file_conversations.md", "label": "conversations.md", "type": "file", "path": "/bob/memories/conversations.md"}, {"id": "file_learnings.md", "label": "learnings.md", "type": "file", "path": "/bob/memories/learnings.md"}, {"id": "file_personality.md", "label": "personality.md", "type": "file", "path": "/bob/memories/personality.md"}, {"id": "file_reflections.md", "label": "reflections.md", "type": "file", "path": "/bob/memories/reflections.md"}], "links": [{"source": 0, "target": 1, "type": "mentions"}, {"source": 2, "target": 3, "type": "mentions"}, {"source": 2, "target": 4, "type": "mentions"}, {"source": 2, "target": 5, "type": "mentions"}, {"source": 6, "target": 7, "type": "mentions"}, {"source": 6, "target": 8, "type": "mentions"}, {"source": 6, "target": 9, "type": "mentions"}, {"source": 6, "target": 10, "type": "mentions"}, {"source": 6, "target": 11, "type": "mentions"}, {"source": 6, "target": 12, "type": "mentions"}, {"source": 13, "target": 14, "type": "mentions"}, {"source": 13, "target": 15, "type": "mentions"}, {"source": 13, "target": 16, "type": "mentions"}, {"source": 17, "target": 18, "type": "mentions"}, {"source": 17, "target": 19, "type": "mentions"}, {"source": 17, "target": 20, "type": "mentions"}, {"source": 17, "target": 21, "type": "mentions"}, {"source": 17, "target": 22, "type": "mentions"}, {"source": 17, "target": 23, "type": "mentions"}, {"source": 17, "target": 24, "type": "mentions"}, {"source": 17, "target": 25, "type": "mentions"}, {"source": 17, "target": 26, "type": "mentions"}, {"source": 27, "target": 28, "type": "mentions"}, {"source": 27, "target": 24, "type": "mentions"}, {"source": 27, "target": 11, "type": "mentions"}, {"source": 27, "target": 29, "type": "mentions"}, {"source": 30, "target": 31, "type": "mentions"}, {"source": 30, "target": 32, "type": "mentions"}, {"source": 30, "target": 33, "type": "mentions"}, {"source": 30, "target": 34, "type": "mentions"}, {"source": 30, "target": 35, "type": "mentions"}, {"source": 30, "target": 36, "type": "mentions"}, {"source": 30, "target": 37, "type": "mentions"}, {"source": 30, "target": 38, "type": "mentions"}, {"source": 30, "target": 39, "type": "mentions"}, {"source": 30, "target": 40, "type": "mentions"}, {"source": 30, "target": 41, "type": "mentions"}, {"source": 30, "target": 32, "type": "mentions"}, {"source": 30, "target": 42, "type": "mentions"}, {"source": 43, "target": 11, "type": "mentions"}, {"source": 43, "target": 44, "type": "mentions"}, {"source": 43, "target": 33, "type": "mentions"}, {"source": 43, "target": 45, "type": "mentions"}, {"source": 46, "target": 47, "type": "mentions"}, {"source": 46, "target": 48, "type": "mentions"}, {"source": 46, "target": 11, "type": "mentions"}, {"source": 46, "target": 49, "type": "mentions"}, {"source": 46, "target": 50, "type": "mentions"}, {"source": 46, "target": 51, "type": "mentions"}, {"source": 46, "target": 52, "type": "mentions"}, {"source": 53, "target": 54, "type": "mentions"}, {"source": 53, "target": 55, "type": "mentions"}, {"source": 53, "target": 11, "type": "mentions"}, {"source": 53, "target": 56, "type": "mentions"}, {"source": 53, "target": 57, "type": "mentions"}, {"source": 58, "target": 59, "type": "mentions"}, {"source": 58, "target": 11, "type": "mentions"}, {"source": 58, "target": 60, "type": "mentions"}, {"source": 58, "target": 61, "type": "mentions"}, {"source": 58, "target": 62, "type": "mentions"}, {"source": 63, "target": 64, "type": "mentions"}, {"source": 63, "target": 28, "type": "mentions"}, {"source": 63, "target": 65, "type": "mentions"}, {"source": 63, "target": 11, "type": "mentions"}, {"source": 66, "target": 33, "type": "mentions"}, {"source": 66, "target": 55, "type": "mentions"}, {"source": 66, "target": 67, "type": "mentions"}, {"source": 66, "target": 68, "type": "mentions"}, {"source": 69, "target": 11, "type": "mentions"}, {"source": 69, "target": 70, "type": "mentions"}, {"source": 69, "target": 59, "type": "mentions"}, {"source": 69, "target": 71, "type": "mentions"}, {"source": 72, "target": 73, "type": "mentions"}, {"source": 72, "target": 74, "type": "mentions"}, {"source": 72, "target": 75, "type": "mentions"}, {"source": 72, "target": 11, "type": "mentions"}, {"source": 76, "target": 77, "type": "mentions"}, {"source": 76, "target": 78, "type": "mentions"}, {"source": 76, "target": 74, "type": "mentions"}, {"source": 76, "target": 11, "type": "mentions"}, {"source": 76, "target": 79, "type": "mentions"}, {"source": 76, "target": 71, "type": "mentions"}, {"source": 76, "target": 77, "type": "mentions"}, {"source": 76, "target": 80, "type": "mentions"}, {"source": 76, "target": 81, "type": "mentions"}, {"source": 76, "target": 82, "type": "mentions"}, {"source": 83, "target": 77, "type": "mentions"}, {"source": 83, "target": 84, "type": "mentions"}, {"source": 83, "target": 74, "type": "mentions"}, {"source": 83, "target": 82, "type": "mentions"}, {"source": 85, "target": 71, "type": "mentions"}, {"source": 85, "target": 86, "type": "mentions"}, {"source": 85, "target": 77, "type": "mentions"}, {"source": 85, "target": 34, "type": "mentions"}, {"source": 85, "target": 74, "type": "mentions"}, {"source": 11, "target": 28, "type": "related", "weight": 2}, {"source": 11, "target": 59, "type": "related", "weight": 2}, {"source": 11, "target": 74, "type": "related", "weight": 2}, {"source": 28, "target": 11, "type": "related", "weight": 2}, {"source": 59, "target": 11, "type": "related", "weight": 2}, {"source": 71, "target": 77, "type": "related", "weight": 2}, {"source": 74, "target": 11, "type": "related", "weight": 2}, {"source": 74, "target": 77, "type": "related", "weight": 3}, {"source": 77, "target": 74, "type": "related", "weight": 3}, {"source": 77, "target": 71, "type": "related", "weight": 2}, {"source": 77, "target": 82, "type": "related", "weight": 2}, {"source": 82, "target": 77, "type": "related", "weight": 2}, {"source": 87, "target": 1, "type": "contains"}, {"source": 87, "target": 7, "type": "contains"}, {"source": 87, "target": 22, "type": "contains"}, {"source": 87, "target": 31, "type": "contains"}, {"source": 87, "target": 38, "type": "contains"}, {"source": 87, "target": 55, "type": "contains"}, {"source": 87, "target": 57, "type": "contains"}, {"source": 87, "target": 74, "type": "contains"}, {"source": 88, "target": 1, "type": "contains"}, {"source": 88, "target": 4, "type": "contains"}, {"source": 88, "target": 7, "type": "contains"}, {"source": 88, "target": 10, "type": "contains"}, {"source": 88, "target": 11, "type": "contains"}, {"source": 88, "target": 12, "type": "contains"}, {"source": 88, "target": 22, "type": "contains"}, {"source": 88, "target": 23, "type": "contains"}, {"source": 88, "target": 24, "type": "contains"}, {"source": 88, "target": 25, "type": "contains"}, {"source": 88, "target": 26, "type": "contains"}, {"source": 88, "target": 31, "type": "contains"}, {"source": 88, "target": 32, "type": "contains"}, {"source": 88, "target": 33, "type": "contains"}, {"source": 88, "target": 36, "type": "contains"}, {"source": 88, "target": 38, "type": "contains"}, {"source": 88, "target": 39, "type": "contains"}, {"source": 88, "target": 40, "type": "contains"}, {"source": 88, "target": 41, "type": "contains"}, {"source": 88, "target": 42, "type": "contains"}, {"source": 88, "target": 47, "type": "contains"}, {"source": 88, "target": 48, "type": "contains"}, {"source": 88, "target": 51, "type": "contains"}, {"source": 88, "target": 52, "type": "contains"}, {"source": 88, "target": 55, "type": "contains"}, {"source": 88, "target": 57, "type": "contains"}, {"source": 88, "target": 59, "type": "contains"}, {"source": 88, "target": 60, "type": "contains"}, {"source": 88, "target": 62, "type": "contains"}, {"source": 88, "target": 65, "type": "contains"}, {"source": 88, "target": 68, "type": "contains"}, {"source": 88, "target": 70, "type": "contains"}, {"source": 88, "target": 71, "type": "contains"}, {"source": 88, "target": 73, "type": "contains"}, {"source": 88, "target": 74, "type": "contains"}, {"source": 88, "target": 80, "type": "contains"}, {"source": 88, "target": 82, "type": "contains"}, {"source": 88, "target": 84, "type": "contains"}, {"source": 88, "target": 86, "type": "contains"}, {"source": 89, "target": 1, "type": "contains"}, {"source": 89, "target": 74, "type": "contains"}, {"source": 90, "target": 1, "type": "contains"}, {"source": 90, "target": 3, "type": "contains"}, {"source": 90, "target": 4, "type": "contains"}, {"source": 90, "target": 5, "type": "contains"}, {"source": 90, "target": 7, "type": "contains"}, {"source": 90, "target": 8, "type": "contains"}, {"source": 90, "target": 9, "type": "contains"}, {"source": 90, "target": 10, "type": "contains"}, {"source": 90, "target": 11, "type": "contains"}, {"source": 90, "target": 12, "type": "contains"}, {"source": 90, "target": 14, "type": "contains"}, {"source": 90, "target": 15, "type": "contains"}, {"source": 90, "target": 16, "type": "contains"}, {"source": 90, "target": 18, "type": "contains"}, {"source": 90, "target": 19, "type": "contains"}, {"source": 90, "target": 20, "type": "contains"}, {"source": 90, "target": 21, "type": "contains"}, {"source": 90, "target": 22, "type": "contains"}, {"source": 90, "target": 23, "type": "contains"}, {"source": 90, "target": 24, "type": "contains"}, {"source": 90, "target": 25, "type": "contains"}, {"source": 90, "target": 26, "type": "contains"}, {"source": 90, "target": 28, "type": "contains"}, {"source": 90, "target": 29, "type": "contains"}, {"source": 90, "target": 31, "type": "contains"}, {"source": 90, "target": 32, "type": "contains"}, {"source": 90, "target": 33, "type": "contains"}, {"source": 90, "target": 34, "type": "contains"}, {"source": 90, "target": 35, "type": "contains"}, {"source": 90, "target": 36, "type": "contains"}, {"source": 90, "target": 37, "type": "contains"}, {"source": 90, "target": 38, "type": "contains"}, {"source": 90, "target": 39, "type": "contains"}, {"source": 90, "target": 40, "type": "contains"}, {"source": 90, "target": 41, "type": "contains"}, {"source": 90, "target": 42, "type": "contains"}, {"source": 90, "target": 44, "type": "contains"}, {"source": 90, "target": 45, "type": "contains"}, {"source": 90, "target": 47, "type": "contains"}, {"source": 90, "target": 48, "type": "contains"}, {"source": 90, "target": 49, "type": "contains"}, {"source": 90, "target": 50, "type": "contains"}, {"source": 90, "target": 51, "type": "contains"}, {"source": 90, "target": 52, "type": "contains"}, {"source": 90, "target": 54, "type": "contains"}, {"source": 90, "target": 55, "type": "contains"}, {"source": 90, "target": 56, "type": "contains"}, {"source": 90, "target": 57, "type": "contains"}, {"source": 90, "target": 59, "type": "contains"}, {"source": 90, "target": 60, "type": "contains"}, {"source": 90, "target": 61, "type": "contains"}, {"source": 90, "target": 62, "type": "contains"}, {"source": 90, "target": 64, "type": "contains"}, {"source": 90, "target": 65, "type": "contains"}, {"source": 90, "target": 67, "type": "contains"}, {"source": 90, "target": 68, "type": "contains"}, {"source": 90, "target": 70, "type": "contains"}, {"source": 90, "target": 71, "type": "contains"}, {"source": 90, "target": 73, "type": "contains"}, {"source": 90, "target": 74, "type": "contains"}, {"source": 90, "target": 75, "type": "contains"}, {"source": 90, "target": 77, "type": "contains"}, {"source": 90, "target": 78, "type": "contains"}, {"source": 90, "target": 79, "type": "contains"}, {"source": 90, "target": 80, "type": "contains"}, {"source": 90, "target": 81, "type": "contains"}, {"source": 90, "target": 82, "type": "contains"}, {"source": 90, "target": 84, "type": "contains"}, {"source": 90, "target": 86, "type": "contains"}, {"source": 17, "target": 27, "type": "follows"}, {"source": 43, "target": 46, "type": "follows"}, {"source": 53, "target": 58, "type": "follows"}, {"source": 58, "target": 63, "type": "follows"}, {"source": 69, "target": 72, "type": "follows"}, {"source": 72, "target": 76, "type": "follows"}, {"source": 76, "target": 76, "type": "follows"}, {"source": 76, "target": 83, "type": "follows"}, {"source": 83, "target": 85, "type": "follows"}]};
+
+        const width = window.innerWidth;
+        const height = window.innerHeight;
+
+        const svg = d3.select("#graph")
+            .attr("width", width)
+            .attr("height", height);
+
+        const g = svg.append("g");
+
+        // Add zoom behavior
+        const zoom = d3.zoom()
+            .scaleExtent([0.1, 10])
+            .on("zoom", (event) => {
+                g.attr("transform", event.transform);
+            });
+
+        svg.call(zoom);
+
+        // Create force simulation
+        const simulation = d3.forceSimulation(graphData.nodes)
+            .force("link", d3.forceLink(graphData.links)
+                .id(d => d.id)
+                .distance(d => {
+                    if (d.type === 'related') return 100;
+                    if (d.type === 'follows') return 80;
+                    return 60;
+                }))
+            .force("charge", d3.forceManyBody()
+                .strength(d => {
+                    if (d.type === 'concept') return -300;
+                    if (d.type === 'file') return -200;
+                    return -100;
+                }))
+            .force("center", d3.forceCenter(width / 2, height / 2))
+            .force("collision", d3.forceCollide().radius(30));
+
+        // Create links
+        const link = g.append("g")
+            .selectAll("line")
+            .data(graphData.links)
+            .join("line")
+            .attr("class", d => `link ${d.type}`)
+            .attr("stroke-width", d => d.weight ? Math.sqrt(d.weight) : 1);
+
+        // Create nodes
+        const node = g.append("g")
+            .selectAll("g")
+            .data(graphData.nodes)
+            .join("g")
+            .attr("class", d => `node ${d.type}`)
+            .call(d3.drag()
+                .on("start", dragstarted)
+                .on("drag", dragged)
+                .on("end", dragended))
+            .on("click", showInfo);
+
+        node.append("circle")
+            .attr("r", d => {
+                if (d.type === 'concept') return Math.min(5 + d.count * 2, 20);
+                if (d.type === 'file') return 12;
+                return 8;
+            });
+
+        node.append("text")
+            .attr("dx", 15)
+            .attr("dy", 4)
+            .text(d => d.label);
+
+        // Update simulation
+        simulation.on("tick", () => {
+            link
+                .attr("x1", d => d.source.x)
+                .attr("y1", d => d.source.y)
+                .attr("x2", d => d.target.x)
+                .attr("y2", d => d.target.y);
+
+            node.attr("transform", d => `translate(${d.x},${d.y})`);
+        });
+
+        // Controls
+        d3.select("#showConcepts").on("change", function() {
+            node.filter(d => d.type === 'concept').style("display", this.checked ? null : "none");
+        });
+
+        d3.select("#showFiles").on("change", function() {
+            node.filter(d => d.type === 'file').style("display", this.checked ? null : "none");
+        });
+
+        d3.select("#showReflections").on("change", function() {
+            node.filter(d => d.type === 'reflection').style("display", this.checked ? null : "none");
+        });
+
+        d3.select("#showLabels").on("change", function() {
+            node.selectAll("text").style("display", this.checked ? null : "none");
+        });
+
+        // Info panel
+        function showInfo(event, d) {
+            node.classed("selected", n => n === d);
+
+            const info = d3.select("#info");
+            info.style("display", "block");
+
+            d3.select("#infoTitle").text(d.label);
+
+            let content = `<p><strong>Type:</strong> ${d.type}</p>`;
+
+            if (d.count) content += `<p><strong>Mentions:</strong> ${d.count}</p>`;
+            if (d.timestamp) content += `<p><strong>Time:</strong> ${d.timestamp}</p>`;
+            if (d.text) content += `<p>${d.text}</p>`;
+            if (d.path) content += `<p><strong>Path:</strong> ${d.path}</p>`;
+
+            // Show connections
+            const connections = graphData.links.filter(l =>
+                l.source.id === d.id || l.target.id === d.id
+            );
+            content += `<p><strong>Connections:</strong> ${connections.length}</p>`;
+
+            d3.select("#infoContent").html(content);
+        }
+
+        // Drag functions
+        function dragstarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x;
+            d.fy = d.y;
+        }
+
+        function dragged(event, d) {
+            d.fx = event.x;
+            d.fy = event.y;
+        }
+
+        function dragended(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null;
+            d.fy = null;
+        }
+
+        // Click outside to deselect
+        svg.on("click", function(event) {
+            if (event.target === this) {
+                node.classed("selected", false);
+                d3.select("#info").style("display", "none");
+            }
+        });
+    </script>
+</body>
+</html>
