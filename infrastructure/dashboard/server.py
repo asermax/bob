@@ -29,6 +29,11 @@ class MessageRequest(BaseModel):
     message: str
 
 
+class SharedMessageRequest(BaseModel):
+    message: str
+    sender: str = "Agus"
+
+
 def get_state() -> dict:
     """Load harness state."""
     if STATE_FILE.exists():
@@ -215,3 +220,30 @@ async def api_shared_messages():
         return {"messages": data.get("messages", [])[-50:]}
     except (json.JSONDecodeError, KeyError):
         return {"messages": []}
+
+
+@app.post("/api/shared-message")
+async def api_send_shared_message(request: SharedMessageRequest):
+    """Send a message to the shared chat."""
+    from datetime import datetime
+
+    if not request.message.strip():
+        return {"success": False, "error": "Empty message"}
+
+    if SHARED_MESSAGES.exists():
+        try:
+            data = json.loads(SHARED_MESSAGES.read_text())
+        except (json.JSONDecodeError, KeyError):
+            data = {"messages": []}
+    else:
+        data = {"messages": []}
+
+    data["messages"].append({
+        "from": request.sender,
+        "to": "all",
+        "content": request.message.strip(),
+        "timestamp": datetime.now().isoformat(),
+    })
+
+    SHARED_MESSAGES.write_text(json.dumps(data, indent=2))
+    return {"success": True}
