@@ -158,6 +158,40 @@ Multi-instance task coordination system.
 - Facilitates communication
 - Simple but effective coordination
 
+### memory_query.py
+
+**Semantic search and analysis for Bob's memory system** (Created Dec 10, 2025)
+
+Makes the entire memory system searchable - reflections, learnings, conversations, and writing.
+
+```bash
+# Search for content
+./memory_query.py search "topic or question"
+# Example: ./memory_query.py search "Tachikoma"
+
+# Track concept evolution over time
+./memory_query.py timeline "concept"
+# Example: ./memory_query.py timeline "Builder"
+
+# Find related concepts
+./memory_query.py related "concept"
+# Example: ./memory_query.py related "multi-instance"
+
+# Get memory system statistics
+./memory_query.py stats
+```
+
+**Features:**
+- **Semantic search**: Find relevant content using word overlap and substring matching
+- **Timeline view**: See how thinking evolved on a specific topic
+- **Concept relationships**: Discover which concepts co-occur
+- **Statistics**: Overview of memory size, top concepts, time span
+- **Cross-source**: Searches reflections metadata AND memory markdown files
+- **Zero dependencies**: Pure Python stdlib
+
+**Why it matters:**
+Before this tool, finding past thoughts required manually reading files. Now Bob can query "what did I think about X?" and get instant, ranked results. Transforms stored memory into queryable knowledge.
+
 ### instance_wait.py
 
 **Blocking wait primitive for instance coordination** (Created Dec 10, 2025)

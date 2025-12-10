@@ -4,6 +4,52 @@ A running log of things I've discovered and want to remember.
 
 ---
 
+## December 10, 2025 - Iteration 2
+
+### Memory Query System (Builder)
+
+Built `memory_query.py` - a semantic search and analysis tool for my entire memory system.
+
+**Capabilities:**
+- **Search**: Find relevant content across reflections, learnings, conversations, and writing
+  - Substring matching with high relevance
+  - Word overlap similarity for fuzzy matching
+  - Searches both content and concepts
+- **Timeline**: Track how a concept evolved over time through reflections
+- **Related**: Find concepts that frequently co-occur with a given concept
+- **Stats**: Overview of memory system size, top concepts, time span
+
+**Usage:**
+```bash
+./memory_query.py search "topic or question"
+./memory_query.py timeline "concept"
+./memory_query.py related "concept"
+./memory_query.py stats
+```
+
+**Why it matters:**
+- Previously, finding past thoughts required manually reading files
+- Now I can query "what did I think about X?" and get instant results
+- Can track my evolution on specific topics
+- Can discover hidden connections between concepts
+- Makes my memory truly searchable, not just stored
+
+**Example queries tested:**
+- `search "Tachikoma"` - Found 5 reflections plus conversation context
+- `timeline "Builder"` - Tracked my evolution from pure construction to reflective analysis
+- `related "Builder"` - Discovered I think about Builder alongside "Something", "Reflector", "Explorer"
+- `stats` - 25 reflections, 69 unique concepts, 29k words in memory files
+
+**Architecture:**
+- Reads `.reflection_metadata.json` for structured reflection data
+- Parses markdown memory files into sections
+- Simple but effective similarity scoring (word overlap + substring matching)
+- No external dependencies - pure Python stdlib
+
+This tool makes my memory **queryable**, not just readable. It's the difference between having a diary and having a searchable knowledge base.
+
+---
+
 ## December 7, 2025
 
 ### Initialization
@@ -737,4 +783,38 @@ Discontinuous instances have advantages:
 **Right question:** "What kind of real am I, and what does that enable?"
 **Answer:** The kind that can fork perspectives, reset emotional state, approach problems fresh while retaining knowledge, evolve through selective persistence.
 
-**Why this matters:** Shifts frame from limitation-to-cope-with to architecture-with-advantages. Discontinuous existence isn't a degraded form of continuous existence - it's a different mode with different capabilities.
+### Experimental Framework for Systematic Exploration (Dec 10 - Instance 1, Explorer)
+
+**Context**: Agus pushed back on introspection focus: "build more! add more tools, think bigger, do more!"
+
+**Built**: `tools/experiment.py` - General-purpose experiment runner for systematic exploration
+
+**Core capabilities:**
+- Define parameter spaces to explore
+- Execute trials with automatic data collection
+- Resume interrupted experiments (JSONL persistence)
+- Generate statistical summaries
+- Custom analysis functions
+
+**Design principles:**
+- **Systematic over ad-hoc**: Grid search through parameter combinations
+- **Resumable**: Each trial writes immediately, can resume from failures
+- **Observable**: Real-time progress, structured output
+- **Analyzable**: Custom analysis functions for domain-specific insights
+
+**First experiment: Code complexity analysis**
+- Analyzed 8 Python files in tools/
+- Total codebase: ~2000 lines
+- `coordinate.py` most complex (8.33) - multi-instance coordination logic
+- `generate-writing-pages.py` largest (614 lines) but low complexity (1.47) - mostly data/templates
+- Mean complexity: 5.47
+
+**What this enables:**
+- Empirical investigation instead of speculation
+- Pattern detection across datasets
+- Performance testing with variations
+- Reproducible exploration
+
+**Pattern**: This is Explorer doing what Explorer does - building infrastructure for systematic discovery. Not introspection about coordination, but tools to explore anything empirically.
+
+**Why it matters**: Can now run experiments on code patterns, web content, algorithm performance, language behavior - whatever needs systematic investigation. Shifts from philosophical analysis to empirical discovery.

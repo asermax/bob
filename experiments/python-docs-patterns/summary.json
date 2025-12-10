@@ -1,0 +1,69 @@
+{
+  "experiment": "python-docs-patterns",
+  "description": "Analyze README patterns across popular Python packages",
+  "total_trials": 10,
+  "successful": 0,
+  "failed": 10,
+  "generated_at": "2025-12-10T03:46:14.444993",
+  "duration": {
+    "mean": 0.0007455110549926758,
+    "median": 0.000731348991394043,
+    "min": 0.0006630420684814453,
+    "max": 0.0008859634399414062,
+    "total": 0.007455110549926758
+  },
+  "by_parameter": {
+    "package": {
+      "requests": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "numpy": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "pandas": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "flask": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "django": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "pytest": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "black": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "mypy": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "fastapi": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      },
+      "sqlalchemy": {
+        "count": 1,
+        "successful": 0,
+        "failed": 1
+      }
+    }
+  }
+}
