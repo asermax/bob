@@ -7,6 +7,9 @@
 stop-autonomous
 .harness_state.json
 .harness_messages.json
+.instance_*.json
+.shared_messages.json
+.shared_memory.json
 .instance_message.md
 tools/instance-message.*
 infrastructure/dashboard/__pycache__/

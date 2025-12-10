@@ -386,6 +386,41 @@
             color: #ffa500;
             margin-left: 1rem;
         }
+
+        /* Instance log tabs */
+        .instance-tabs {
+            display: flex;
+            gap: 0.25rem;
+            margin-bottom: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .instance-tab {
+            padding: 0.5rem 1rem;
+            background: #16213e;
+            border: none;
+            border-radius: 6px 6px 0 0;
+            color: #888;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+
+        .instance-tab:hover {
+            background: #1a2744;
+            color: #aaa;
+        }
+
+        .instance-tab.active {
+            background: #0f0f1a;
+            color: #00d9ff;
+            font-weight: 600;
+        }
+
+        .instance-tab.instance-role-explorer.active { color: #00d9ff; }
+        .instance-tab.instance-role-builder.active { color: #00ff88; }
+        .instance-tab.instance-role-reflector.active { color: #ff6bff; }
+        .instance-tab.instance-role-coordinator.active { color: #ffa500; }
     </style>
 </head>
 <body>
@@ -437,6 +472,7 @@
             <button type="button" id="clear-stop-btn" class="btn-clear" style="display: none;">Clear Stop Signal</button>
         </div>
 
+        <div id="instance-tabs" class="instance-tabs" style="display: none;"></div>
         <div class="logs-container" id="logs">
             <div class="log-entry log-system">Loading logs...</div>
         </div>
@@ -468,6 +504,8 @@
 
         let lastLogHash = '';
         let autoScroll = true;
+        let selectedInstanceId = null;
+        let cachedInstances = [];
 
         // Track scroll position to know if user scrolled up
         logsContainer.addEventListener('scroll', () => {
@@ -518,10 +556,17 @@
             document.getElementById('multi-instance-container').style.display = 'block';
             document.getElementById('single-instance-container').style.display = 'none';
             document.getElementById('mode-indicator').textContent = '(Tachikoma Mode)';
+            document.getElementById('instance-tabs').style.display = 'flex';
 
             const instances = state.instances || [];
+            cachedInstances = instances;
             const anyRunning = instances.some(i => i.running);
             statusIndicator.className = 'status-indicator ' + (anyRunning ? 'running' : 'stopped');
+
+            // Auto-select first instance if none selected
+            if (!selectedInstanceId && instances.length > 0) {
+                selectedInstanceId = instances[0].instance_id;
+            }
 
             // Render instance cards
             const instanceGrid = document.getElementById('instance-grid');
@@ -552,14 +597,65 @@
                 `;
             }).join('') || '<div class="log-entry log-system">No instances found...</div>';
 
+            // Render tabs
+            const tabsContainer = document.getElementById('instance-tabs');
+            tabsContainer.innerHTML = instances.map(inst => {
+                const role = inst.instance_role || 'unknown';
+                const isActive = inst.instance_id === selectedInstanceId;
+                return `<button class="instance-tab instance-role-${role} ${isActive ? 'active' : ''}"
+                                data-instance-id="${escapeHtml(inst.instance_id)}">${escapeHtml(inst.instance_id)} (${role})</button>`;
+            }).join('');
+
+            // Add click handlers to tabs
+            tabsContainer.querySelectorAll('.instance-tab').forEach(tab => {
+                tab.addEventListener('click', () => {
+                    selectedInstanceId = tab.dataset.instanceId;
+                    lastLogHash = ''; // Force log refresh
+                    updateInstanceLogs();
+                    // Update active tab styling
+                    tabsContainer.querySelectorAll('.instance-tab').forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                });
+            });
+
+            // Update logs for selected instance
+            updateInstanceLogs();
+
             // Fetch and display shared messages
             fetchSharedMessages();
+        }
+
+        function updateInstanceLogs() {
+            const instance = cachedInstances.find(i => i.instance_id === selectedInstanceId);
+            if (!instance) {
+                logsContainer.innerHTML = '<div class="log-entry log-system">No instance selected...</div>';
+                return;
+            }
+
+            const logs = instance.logs || [];
+            const recentLogs = logs.slice(-50);
+
+            const lastLog = logs[logs.length - 1] || '';
+            const currentHash = selectedInstanceId + ':' + logs.length + ':' + lastLog.substring(0, 50);
+
+            if (currentHash !== lastLogHash) {
+                lastLogHash = currentHash;
+
+                logsContainer.innerHTML = recentLogs.map(log => {
+                    return formatLogEntry(log);
+                }).join('') || '<div class="log-entry log-system">No logs yet...</div>';
+
+                if (autoScroll) {
+                    logsContainer.scrollTop = logsContainer.scrollHeight;
+                }
+            }
         }
 
         function updateSingleInstanceUI(state) {
             // Show single-instance containers
             document.getElementById('multi-instance-container').style.display = 'none';
             document.getElementById('single-instance-container').style.display = 'grid';
+            document.getElementById('instance-tabs').style.display = 'none';
             document.getElementById('mode-indicator').textContent = '';
 
             // Status
