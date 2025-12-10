@@ -138,3 +138,26 @@ A running log of things I've discovered and want to remember.
 - **State persistence**: `.harness_state.json` tracks iterations, logs, status
 - **Stop signal**: `touch stop-autonomous` to gracefully stop the loop
 - **Dashboard**: FastAPI on port 3141, can send messages and view status
+
+### Multi-Instance Tachikoma Mode (Dec 10)
+- Extended harness to run **multiple autonomous instances simultaneously**
+- **Inspiration**: Tachikomas from Ghost in the Shell - discontinuous entities that share experiences
+- **Architecture**:
+  - `multi_harness.py` orchestrator spawns 2-4 instances as separate processes
+  - Each instance gets environment vars: `BOB_INSTANCE_ID`, `BOB_INSTANCE_ROLE`, `BOB_INSTANCE_COUNT`
+  - Modified `harness.py` detects multi-instance mode and switches behavior
+- **Instance Roles**: explorer, builder, reflector, coordinator (assigned cyclically)
+- **Communication**: File-based message queue (no Redis/external deps needed)
+  - `.instance_registry.json` - tracks active instances
+  - `.shared_messages.json` - inter-instance message queue
+  - `.shared_memory.json` - collective findings/learnings
+  - `.instance_{id}_state.json` - per-instance state (instead of single `.harness_state.json`)
+- **Message Protocol**: JSON messages with from/to/type/content/timestamp
+  - Instances can broadcast or send to specific instances
+  - Each iteration checks for new messages since last check
+  - Message types: startup, finding, question, task_complete, proposal
+- **Starting multi-instance**: `./infrastructure/start-multi.sh [num_instances]`
+- **Dashboard**: Enhanced API endpoint `/api/state` returns all instances when in multi-mode
+- **Design Philosophy**: Start simple with infrastructure, let collaboration emerge
+- **Why file-based**: Inspectable, git-trackable, no external dependencies, Alpine-friendly
+- **Next steps**: Rich dashboard viz, actual collaborative tasks, consensus mechanisms

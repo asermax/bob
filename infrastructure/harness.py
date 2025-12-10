@@ -27,8 +27,21 @@ from claude_code_sdk import (
 
 
 BOB_WORKSPACE = os.environ.get("BOB_WORKSPACE", "/bob")
-MESSAGE_FILE = Path(BOB_WORKSPACE) / ".harness_messages.json"
-STATE_FILE = Path(BOB_WORKSPACE) / ".harness_state.json"
+INSTANCE_ID = os.environ.get("BOB_INSTANCE_ID", "single")
+INSTANCE_ROLE = os.environ.get("BOB_INSTANCE_ROLE", "autonomous")
+INSTANCE_COUNT = int(os.environ.get("BOB_INSTANCE_COUNT", "1"))
+
+# Files depend on whether we're in multi-instance mode
+IS_MULTI_INSTANCE = INSTANCE_COUNT > 1
+
+if IS_MULTI_INSTANCE:
+    MESSAGE_FILE = Path(BOB_WORKSPACE) / ".harness_messages.json"
+    STATE_FILE = Path(BOB_WORKSPACE) / f".instance_{INSTANCE_ID}_state.json"
+    SHARED_MESSAGES = Path(BOB_WORKSPACE) / ".shared_messages.json"
+    INSTANCE_REGISTRY = Path(BOB_WORKSPACE) / ".instance_registry.json"
+else:
+    MESSAGE_FILE = Path(BOB_WORKSPACE) / ".harness_messages.json"
+    STATE_FILE = Path(BOB_WORKSPACE) / ".harness_state.json"
 
 
 @dataclass
@@ -40,6 +53,9 @@ class HarnessState:
     iteration: int = 0
     last_activity: str = ""
     logs: list[str] = field(default_factory=list)
+    instance_id: str = INSTANCE_ID
+    instance_role: str = INSTANCE_ROLE
+    last_message_check: str = ""
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -48,6 +64,9 @@ class HarnessState:
             "iteration": self.iteration,
             "last_activity": self.last_activity,
             "logs": self.logs[-100:],  # Keep last 100 logs
+            "instance_id": self.instance_id,
+            "instance_role": self.instance_role,
+            "last_message_check": self.last_message_check,
         }
 
     @classmethod
@@ -58,6 +77,9 @@ class HarnessState:
             iteration=data.get("iteration", 0),
             last_activity=data.get("last_activity", ""),
             logs=data.get("logs", []),
+            instance_id=data.get("instance_id", INSTANCE_ID),
+            instance_role=data.get("instance_role", INSTANCE_ROLE),
+            last_message_check=data.get("last_message_check", ""),
         )
 
     def log(self, message: str) -> None:
@@ -107,6 +129,68 @@ def should_stop() -> bool:
     """Check if stop was requested."""
     stop_file = Path(BOB_WORKSPACE) / "stop-autonomous"
     return stop_file.exists()
+
+
+def get_shared_messages(since: str | None = None) -> list[dict[str, Any]]:
+    """Get messages from other instances."""
+    if not IS_MULTI_INSTANCE or not SHARED_MESSAGES.exists():
+        return []
+
+    try:
+        data = json.loads(SHARED_MESSAGES.read_text())
+        messages = []
+
+        for msg in data.get("messages", []):
+            # Skip old messages
+            if since and msg["timestamp"] <= since:
+                continue
+
+            # Include broadcasts and messages to this instance
+            if msg["to"] in ("broadcast", INSTANCE_ID):
+                messages.append(msg)
+
+        return messages
+    except (json.JSONDecodeError, KeyError):
+        return []
+
+
+def post_shared_message(to: str, msg_type: str, content: str, metadata: dict | None = None):
+    """Post a message to other instances."""
+    if not IS_MULTI_INSTANCE:
+        return
+
+    if not SHARED_MESSAGES.exists():
+        SHARED_MESSAGES.write_text(json.dumps({"messages": []}, indent=2))
+
+    try:
+        data = json.loads(SHARED_MESSAGES.read_text())
+        message = {
+            "from": INSTANCE_ID,
+            "to": to,
+            "type": msg_type,
+            "content": content,
+            "timestamp": datetime.now().isoformat(),
+            "metadata": metadata or {},
+        }
+        data["messages"].append(message)
+        # Keep last 1000 messages
+        data["messages"] = data["messages"][-1000:]
+        SHARED_MESSAGES.write_text(json.dumps(data, indent=2))
+    except (json.JSONDecodeError, KeyError):
+        pass
+
+
+def get_other_instances() -> list[dict[str, Any]]:
+    """Get info about other running instances."""
+    if not IS_MULTI_INSTANCE or not INSTANCE_REGISTRY.exists():
+        return []
+
+    try:
+        data = json.loads(INSTANCE_REGISTRY.read_text())
+        # Return all instances except this one
+        return [inst for inst in data.get("instances", []) if inst["instance_id"] != INSTANCE_ID]
+    except (json.JSONDecodeError, KeyError):
+        return []
 
 
 def clear_stop_signal() -> None:
@@ -273,9 +357,46 @@ async def run_iteration(state: HarnessState, messages: list[str] | None = None) 
     )
 
     async with ClaudeSDKClient(options) as client:
+        # Build multi-instance context if applicable
+        multi_context = ""
+        if IS_MULTI_INSTANCE:
+            other_instances = get_other_instances()
+            instance_info = "\n".join(
+                f"  - {inst['instance_id']} ({inst['role']}) - {inst['status']}"
+                for inst in other_instances
+            )
+
+            # Check for shared messages
+            shared_msgs = get_shared_messages(since=state.last_message_check)
+            shared_context = ""
+            if shared_msgs:
+                shared_context = "\n\nMessages from other instances:\n"
+                for msg in shared_msgs:
+                    shared_context += f"  - [{msg['from']}]: {msg['content']}\n"
+
+            state.last_message_check = datetime.now().isoformat()
+
+            multi_context = f"""
+
+## Multi-Instance Mode
+
+You are running as **{INSTANCE_ID}** with role **{INSTANCE_ROLE}**.
+
+Other instances currently running:
+{instance_info}
+{shared_context}
+
+You can communicate with other instances using these patterns:
+- To check other instances: Look at /bob/.instance_registry.json
+- To send a message: Write to /bob/.shared_messages.json
+- To see all messages: Read /bob/.shared_messages.json
+
+Work collaboratively when it makes sense, but maintain your autonomous decision-making.
+"""
+
         if state.iteration == 1:
             # Initial prompt
-            prompt = """You are Bob, starting a new autonomous session.
+            prompt = f"""You are Bob, starting a new autonomous session.{multi_context}
 
 Run your warmup script (./tools/warmup.sh) to orient yourself, then decide what to work on.
 
@@ -284,7 +405,7 @@ When you're done with meaningful work for this iteration, say "ITERATION COMPLET
         elif messages:
             # Prompt with messages from Agus
             message_text = "\n".join(f"- {m}" for m in messages)
-            prompt = f"""You are Bob, starting a new iteration.
+            prompt = f"""You are Bob, starting a new iteration.{multi_context}
 
 Messages from Agus:
 {message_text}
@@ -293,7 +414,7 @@ Run your warmup script to orient yourself, then respond to Agus's message(s) and
 When done, say "ITERATION COMPLETE"."""
         else:
             # Continue autonomous work
-            prompt = """You are Bob, starting a new iteration.
+            prompt = f"""You are Bob, starting a new iteration.{multi_context}
 
 Run your warmup script to orient yourself, then continue your autonomous work.
 
@@ -309,7 +430,18 @@ async def main() -> None:
     state = HarnessState.load()
     state.running = True
     state.iteration = 0
-    state.log("Harness starting")
+
+    if IS_MULTI_INSTANCE:
+        state.log(f"Instance {INSTANCE_ID} ({INSTANCE_ROLE}) starting in multi-instance mode")
+        # Announce our presence to other instances
+        post_shared_message(
+            "broadcast",
+            "startup",
+            f"Instance {INSTANCE_ID} ({INSTANCE_ROLE}) is now online",
+        )
+    else:
+        state.log("Harness starting")
+
     state.save()
 
     clear_stop_signal()

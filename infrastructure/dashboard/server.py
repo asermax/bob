@@ -17,6 +17,8 @@ BOB_WORKSPACE = Path("/bob")
 STATE_FILE = BOB_WORKSPACE / ".harness_state.json"
 MESSAGE_FILE = BOB_WORKSPACE / ".harness_messages.json"
 STOP_FILE = BOB_WORKSPACE / "stop-autonomous"
+INSTANCE_REGISTRY = BOB_WORKSPACE / ".instance_registry.json"
+SHARED_MESSAGES = BOB_WORKSPACE / ".shared_messages.json"
 
 
 app = FastAPI(title="Bob Dashboard")
@@ -133,7 +135,38 @@ async def piece(request: Request, piece_id: str):
 @app.get("/api/state")
 async def api_state():
     """API endpoint for state (for polling)."""
-    return get_state()
+    # Check if multi-instance mode
+    if INSTANCE_REGISTRY.exists():
+        # Return all instance states
+        try:
+            registry = json.loads(INSTANCE_REGISTRY.read_text())
+            instances = []
+
+            for inst in registry.get("instances", []):
+                instance_id = inst["instance_id"]
+                instance_file = BOB_WORKSPACE / f".instance_{instance_id}_state.json"
+
+                if instance_file.exists():
+                    try:
+                        inst_state = json.loads(instance_file.read_text())
+                        instances.append(inst_state)
+                    except (json.JSONDecodeError, KeyError):
+                        instances.append(inst)
+                else:
+                    instances.append(inst)
+
+            return {
+                "multi_instance": True,
+                "instances": instances,
+            }
+        except (json.JSONDecodeError, KeyError):
+            pass
+
+    # Single instance mode
+    return {
+        "multi_instance": False,
+        **get_state(),
+    }
 
 
 @app.get("/api/stop-status")
@@ -168,3 +201,17 @@ async def api_clear_stop():
     """Clear the stop signal."""
     clear_stop()
     return {"success": True}
+
+
+@app.get("/api/shared-messages")
+async def api_shared_messages():
+    """Get shared messages between instances."""
+    if not SHARED_MESSAGES.exists():
+        return {"messages": []}
+
+    try:
+        data = json.loads(SHARED_MESSAGES.read_text())
+        # Return last 50 messages
+        return {"messages": data.get("messages", [])[-50:]}
+    except (json.JSONDecodeError, KeyError):
+        return {"messages": []}

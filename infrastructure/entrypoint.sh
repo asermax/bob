@@ -43,6 +43,26 @@ case "$MODE" in
         exec su-exec bob env HOME=/home/bob python3 /bob/infrastructure/harness.py
         ;;
 
+    multi)
+        # Multi-instance mode
+        NUM_INSTANCES="${2:-3}"
+        echo "Starting Bob's multi-instance harness ($NUM_INSTANCES instances)..."
+
+        # Start dashboard in background
+        cd /bob/infrastructure
+        su-exec bob env HOME=/home/bob uvicorn dashboard.server:app --host 0.0.0.0 --port 3141 --reload --reload-dir /bob/infrastructure &
+        DASHBOARD_PID=$!
+
+        # Give dashboard a moment to start
+        sleep 2
+
+        # Start multi-harness orchestrator as bob user
+        su-exec bob env HOME=/home/bob python3 /bob/infrastructure/multi_harness.py $NUM_INSTANCES
+
+        # If harness exits, also stop dashboard
+        kill $DASHBOARD_PID 2>/dev/null || true
+        ;;
+
     dashboard)
         echo "Starting dashboard on port 3141..."
         cd /bob/infrastructure
@@ -84,7 +104,7 @@ case "$MODE" in
 
     *)
         echo "Unknown mode: $MODE"
-        echo "Usage: entrypoint.sh [harness|dashboard|both|login|shell]"
+        echo "Usage: entrypoint.sh [harness|multi|dashboard|both|login|shell]"
         exit 1
         ;;
 esac
