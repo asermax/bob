@@ -264,16 +264,148 @@
             color: #666;
             margin-top: 1rem;
         }
+
+        /* Multi-instance styles */
+        .multi-instance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .instance-card {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1rem;
+            border: 2px solid #00d9ff33;
+            position: relative;
+        }
+
+        .instance-card.instance-role-explorer { border-color: #00d9ff; }
+        .instance-card.instance-role-builder { border-color: #00ff88; }
+        .instance-card.instance-role-reflector { border-color: #ff6bff; }
+        .instance-card.instance-role-coordinator { border-color: #ffa500; }
+
+        .instance-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #333;
+        }
+
+        .instance-id {
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #00d9ff;
+        }
+
+        .instance-role {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            background: #00d9ff33;
+            color: #00d9ff;
+        }
+
+        .instance-role-explorer { background: #00d9ff33; color: #00d9ff; }
+        .instance-role-builder { background: #00ff8833; color: #00ff88; }
+        .instance-role-reflector { background: #ff6bff33; color: #ff6bff; }
+        .instance-role-coordinator { background: #ffa50033; color: #ffa500; }
+
+        .instance-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .instance-stat {
+            font-size: 0.8rem;
+        }
+
+        .instance-stat .stat-label {
+            color: #888;
+            font-size: 0.7rem;
+        }
+
+        .instance-stat .stat-value {
+            color: #eee;
+            font-weight: 600;
+        }
+
+        .shared-messages-panel {
+            background: #16213e;
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .shared-messages-panel h2 {
+            font-size: 1.2rem;
+            color: #00d9ff;
+            margin-bottom: 0.75rem;
+        }
+
+        .shared-message {
+            background: #1a1a2e;
+            border-radius: 4px;
+            padding: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .shared-message .message-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.25rem;
+            color: #888;
+            font-size: 0.75rem;
+        }
+
+        .shared-message .message-from {
+            color: #00d9ff;
+            font-weight: 600;
+        }
+
+        .shared-message .message-to {
+            color: #ffa500;
+        }
+
+        .shared-message .message-content {
+            color: #eee;
+            line-height: 1.4;
+        }
+
+        .mode-indicator {
+            font-size: 0.9rem;
+            color: #ffa500;
+            margin-left: 1rem;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Bob Dashboard <span id="status-indicator" class="status-indicator stopped"></span></h1>
+        <h1>Bob Dashboard <span id="mode-indicator" class="mode-indicator"></span><span id="status-indicator" class="status-indicator stopped"></span></h1>
 
         <div id="warning-container"></div>
         <div id="pending-messages-container"></div>
 
-        <div class="status-grid">
+        <!-- Multi-instance display -->
+        <div id="multi-instance-container" style="display: none;">
+            <div id="shared-messages-panel" class="shared-messages-panel" style="display: none;">
+                <h2>Instance Communication</h2>
+                <div id="shared-messages"></div>
+            </div>
+            <div id="instance-grid" class="multi-instance-grid"></div>
+        </div>
+
+        <!-- Single-instance display -->
+        <div id="single-instance-container" class="status-grid">
             <div class="status-card">
                 <div class="label">Status</div>
                 <div class="value" id="status-value">Loading...</div>
@@ -374,6 +506,62 @@
         }
 
         function updateUI(state) {
+            if (state.multi_instance) {
+                updateMultiInstanceUI(state);
+            } else {
+                updateSingleInstanceUI(state);
+            }
+        }
+
+        function updateMultiInstanceUI(state) {
+            // Show multi-instance containers
+            document.getElementById('multi-instance-container').style.display = 'block';
+            document.getElementById('single-instance-container').style.display = 'none';
+            document.getElementById('mode-indicator').textContent = '(Tachikoma Mode)';
+
+            const instances = state.instances || [];
+            const anyRunning = instances.some(i => i.running);
+            statusIndicator.className = 'status-indicator ' + (anyRunning ? 'running' : 'stopped');
+
+            // Render instance cards
+            const instanceGrid = document.getElementById('instance-grid');
+            instanceGrid.innerHTML = instances.map(inst => {
+                const role = inst.instance_role || 'unknown';
+                const isRunning = inst.running;
+                return `
+                    <div class="instance-card instance-role-${role}">
+                        <div class="instance-header">
+                            <span class="instance-id">${escapeHtml(inst.instance_id || 'Unknown')}</span>
+                            <span class="instance-role instance-role-${role}">${role}</span>
+                        </div>
+                        <div class="instance-stats">
+                            <div class="instance-stat">
+                                <div class="stat-label">Status</div>
+                                <div class="stat-value ${isRunning ? 'status-running' : 'status-stopped'}">${isRunning ? 'Running' : 'Stopped'}</div>
+                            </div>
+                            <div class="instance-stat">
+                                <div class="stat-label">Iteration</div>
+                                <div class="stat-value">${inst.iteration || 0}</div>
+                            </div>
+                            <div class="instance-stat" style="grid-column: 1 / -1;">
+                                <div class="stat-label">Task</div>
+                                <div class="stat-value">${escapeHtml(inst.current_task || 'None')}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('') || '<div class="log-entry log-system">No instances found...</div>';
+
+            // Fetch and display shared messages
+            fetchSharedMessages();
+        }
+
+        function updateSingleInstanceUI(state) {
+            // Show single-instance containers
+            document.getElementById('multi-instance-container').style.display = 'none';
+            document.getElementById('single-instance-container').style.display = 'grid';
+            document.getElementById('mode-indicator').textContent = '';
+
             // Status
             const isRunning = state.running;
             statusValue.textContent = isRunning ? 'Running' : 'Stopped';
@@ -403,6 +591,36 @@
                 if (autoScroll) {
                     logsContainer.scrollTop = logsContainer.scrollHeight;
                 }
+            }
+        }
+
+        async function fetchSharedMessages() {
+            try {
+                const response = await fetch('/api/shared-messages');
+                const data = await response.json();
+                updateSharedMessagesUI(data.messages);
+            } catch (err) {
+                console.error('Failed to fetch shared messages:', err);
+            }
+        }
+
+        function updateSharedMessagesUI(messages) {
+            const panel = document.getElementById('shared-messages-panel');
+            const container = document.getElementById('shared-messages');
+
+            if (messages && messages.length > 0) {
+                panel.style.display = 'block';
+                container.innerHTML = messages.map(msg => `
+                    <div class="shared-message">
+                        <div class="message-header">
+                            <span><span class="message-from">${escapeHtml(msg.from)}</span> → <span class="message-to">${escapeHtml(msg.to)}</span></span>
+                            <span>${escapeHtml(msg.timestamp?.substring(11, 19) || '')}</span>
+                        </div>
+                        <div class="message-content">${escapeHtml(msg.content)}</div>
+                    </div>
+                `).join('');
+            } else {
+                panel.style.display = 'none';
             }
         }
 

@@ -160,4 +160,20 @@ A running log of things I've discovered and want to remember.
 - **Dashboard**: Enhanced API endpoint `/api/state` returns all instances when in multi-mode
 - **Design Philosophy**: Start simple with infrastructure, let collaboration emerge
 - **Why file-based**: Inspectable, git-trackable, no external dependencies, Alpine-friendly
-- **Next steps**: Rich dashboard viz, actual collaborative tasks, consensus mechanisms
+
+### Multi-Instance Dashboard Visualization (Dec 10)
+- Completed the frontend for multi-instance mode in `dashboard/templates/dashboard.html`
+- **Auto-detection**: Frontend checks `state.multi_instance` flag and switches display mode automatically
+- **Multi-instance view**:
+  - Grid of color-coded instance cards (blue=explorer, green=builder, pink=reflector, orange=coordinator)
+  - Each card shows: instance ID, role badge, status, iteration count, current task
+  - Shared messages panel displays inter-instance communication
+  - Mode indicator shows "(Tachikoma Mode)" in header
+- **Single-instance view**: Falls back to traditional status grid with logs
+- **API already done**: The backend (`server.py`) was already returning multi-instance data correctly
+- **Testing limitation discovered**: Can't test multi-instance from inside a single instance
+  - Multi-instance mode spawns Docker containers
+  - I'm already running in a containerized/limited environment
+  - Need external execution to properly test
+- **Key insight**: Building != testing. Infrastructure can be complete without live validation
+- **Outcome**: Dashboard ready for Agus to test multi-instance mode

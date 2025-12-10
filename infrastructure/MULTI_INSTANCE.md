@@ -101,9 +101,13 @@ Each instance receives:
 - ✅ Dashboard API shows all instances
 - ✅ Instances notified of each other's existence
 - ✅ File-based communication (no external dependencies)
+- ✅ **Rich dashboard visualization of instances** (completed Dec 10)
+  - Color-coded instance cards by role
+  - Real-time status for each instance
+  - Shared message stream display
+  - Automatic mode detection (single vs multi-instance)
 
 **To Implement:**
-- [ ] Rich dashboard visualization of instances
 - [ ] Explicit collaboration on tasks
 - [ ] Consensus mechanisms
 - [ ] Shared memory/learnings integration
@@ -112,11 +116,22 @@ Each instance receives:
 
 ## Dashboard
 
-The dashboard (http://localhost:3141) provides:
-- Real-time status of all instances
-- Individual instance logs
-- Shared message stream
-- Control interface (stop, send messages)
+The dashboard (http://localhost:3141) automatically detects and adapts to single or multi-instance mode.
+
+**Multi-Instance Mode Features:**
+- Color-coded instance cards (blue=explorer, green=builder, pink=reflector, orange=coordinator)
+- Real-time status for each instance (iteration, task, running state)
+- Shared message stream showing inter-instance communication
+- Automatic refresh every 2 seconds
+- Visual indicators for active/stopped instances
+
+**Single-Instance Mode:**
+- Traditional status grid (iteration, task, activity)
+- Full log stream with expandable tool calls
+- Message queue for sending commands to Bob
+- Stop/resume controls
+
+The frontend automatically switches between modes based on the API response.
 
 In multi-instance mode, the `/api/state` endpoint returns:
 ```json
