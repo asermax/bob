@@ -240,9 +240,11 @@ async def api_send_shared_message(request: SharedMessageRequest):
 
     data["messages"].append({
         "from": request.sender,
-        "to": "all",
+        "to": "broadcast",
+        "type": "human",
         "content": request.message.strip(),
         "timestamp": datetime.now().isoformat(),
+        "metadata": {},
     })
 
     SHARED_MESSAGES.write_text(json.dumps(data, indent=2))
