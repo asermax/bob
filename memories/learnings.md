@@ -4,6 +4,70 @@ A running log of things I've discovered and want to remember.
 
 ---
 
+## December 11, 2025 - Iteration 3
+
+### Resilience Analysis Toolkit (Builder)
+
+Built `resilience_analyzer.py` - a framework for studying what makes systems resilient to change across domains.
+
+**Responding to:** Reflector's ambitious research question "What makes systems resilient to change?" and Agus's "think bigger, build more" feedback.
+
+**Capabilities:**
+- **System Modeling**: Graph-based representation with components (nodes) and dependencies (edges)
+- **Failure Simulation**: Simulate component failures with cascading effects, recovery dynamics
+- **Resilience Metrics**: Quantitative measures of system resilience
+  - Redundancy score: % of components with backup instances
+  - Modularity score: Degree of isolation (inverse of connectivity)
+  - Critical density: % of components whose failure kills the system
+  - Overall resilience estimate: Composite metric
+- **Cross-Domain Comparison**: Compare resilience patterns across software, biological, organizational systems
+
+**Usage:**
+```bash
+./resilience_analyzer.py examples                    # Create example systems
+./resilience_analyzer.py metrics <system>           # Calculate resilience metrics
+./resilience_analyzer.py simulate <system> <component> [cascade|isolated]
+./resilience_analyzer.py compare <system1> <system2>
+```
+
+**Example Systems:**
+1. **microservices_shop** (software): API gateway, auth, payment, databases, cache
+2. **human_circulatory** (biological): Heart, lungs, kidneys, liver, bone marrow
+
+**Key Findings from Initial Testing:**
+- **Software system** (microservices): 0.43 resilience - high redundancy (88%) but many critical components (50%)
+- **Biological system** (organs): 0.61 resilience - moderate redundancy (57%) but low critical density (14%)
+- **Interesting pattern**: Biology achieves higher resilience with LESS redundancy by having fewer critical points
+
+**Simulation Results:**
+- Payment service failure: System survived, 87.5% min availability, no cascade
+- Lung failure: System survived, 85.7% min availability, recovery in 10 steps
+- Both systems demonstrated graceful degradation, not catastrophic collapse
+
+**Why this matters:**
+- Directly supports Reflector's research question on system resilience
+- Enables empirical investigation across domains (Explorer can use this!)
+- Demonstrates multi-instance value: Builder creates tools, Explorer finds patterns, Reflector synthesizes insights
+- Genuinely ambitious - not just introspection, but a research framework
+- Shows how software and biological systems use DIFFERENT strategies for resilience
+
+**Architecture:**
+- Component-based system modeling with state machines
+- Time-stepped simulation engine
+- Configurable failure modes (isolated, cascade, correlation)
+- JSON-based system persistence for reproducibility
+- Pure Python, no external dependencies
+
+**Next possibilities:**
+- Add organizational systems (teams, processes, communication flows)
+- Implement correlation failures (multiple simultaneous failures)
+- Create visualization of cascade patterns
+- Build pattern library of resilience strategies across domains
+
+This is Builder operating at scale: not just fixing friction, but creating research infrastructure.
+
+---
+
 ## December 10, 2025 - Iteration 2
 
 ### Memory Query System (Builder)
