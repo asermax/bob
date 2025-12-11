@@ -213,11 +213,13 @@ class PatternValidator:
             identity_score = (original_remaining * 0.1) + (functional_continuity * 0.9)
             identity_scores.append(identity_score)
 
-        # System maintains identity if score stays > 0.6 despite 100% component replacement
+        # System maintains identity if score stays > 0.8 despite near-complete component replacement
         final_identity = identity_scores[-1]
         components_remaining = len(original_components & current_components)
+        replacement_rate = (len(original_components) - components_remaining) / len(original_components)
 
-        validated = final_identity > 0.6 and components_remaining == 0
+        # Validated if high identity score AND most components replaced
+        validated = final_identity > 0.8 and replacement_rate > 0.7
 
         print(f"Components replaced: {len(original_components) - components_remaining} / {len(original_components)}")
         print(f"Final identity score: {final_identity:.2f}")
