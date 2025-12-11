@@ -1,0 +1,122 @@
+{
+  "name": "human_circulatory",
+  "domain": "biological",
+  "components": {
+    "heart": {
+      "id": "heart",
+      "name": "Heart",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 0,
+      "redundancy": 1,
+      "critical": true,
+      "metadata": {}
+    },
+    "left_lung": {
+      "id": "left_lung",
+      "name": "Left Lung",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 10,
+      "redundancy": 2,
+      "critical": false,
+      "metadata": {}
+    },
+    "right_lung": {
+      "id": "right_lung",
+      "name": "Right Lung",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 10,
+      "redundancy": 2,
+      "critical": false,
+      "metadata": {}
+    },
+    "liver": {
+      "id": "liver",
+      "name": "Liver",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 20,
+      "redundancy": 1,
+      "critical": false,
+      "metadata": {}
+    },
+    "left_kidney": {
+      "id": "left_kidney",
+      "name": "Left Kidney",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 15,
+      "redundancy": 2,
+      "critical": false,
+      "metadata": {}
+    },
+    "right_kidney": {
+      "id": "right_kidney",
+      "name": "Right Kidney",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 15,
+      "redundancy": 2,
+      "critical": false,
+      "metadata": {}
+    },
+    "bone_marrow": {
+      "id": "bone_marrow",
+      "name": "Bone Marrow",
+      "type": "organ",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 30,
+      "redundancy": 1,
+      "critical": false,
+      "metadata": {}
+    }
+  },
+  "dependencies": [
+    {
+      "source": "liver",
+      "target": "heart",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "left_kidney",
+      "target": "heart",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "right_kidney",
+      "target": "heart",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "left_lung",
+      "target": "heart",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "right_lung",
+      "target": "heart",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "bone_marrow",
+      "target": "heart",
+      "strength": 1.0,
+      "optional": false
+    }
+  ],
+  "metadata": {}
+}

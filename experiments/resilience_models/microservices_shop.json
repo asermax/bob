@@ -1,0 +1,145 @@
+{
+  "name": "microservices_shop",
+  "domain": "software",
+  "components": {
+    "api_gateway": {
+      "id": "api_gateway",
+      "name": "API Gateway",
+      "type": "service",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 2,
+      "critical": true,
+      "metadata": {}
+    },
+    "auth_service": {
+      "id": "auth_service",
+      "name": "Auth Service",
+      "type": "service",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 2,
+      "critical": true,
+      "metadata": {}
+    },
+    "product_service": {
+      "id": "product_service",
+      "name": "Product Service",
+      "type": "service",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 3,
+      "critical": false,
+      "metadata": {}
+    },
+    "order_service": {
+      "id": "order_service",
+      "name": "Order Service",
+      "type": "service",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 2,
+      "critical": false,
+      "metadata": {}
+    },
+    "payment_service": {
+      "id": "payment_service",
+      "name": "Payment Service",
+      "type": "service",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 2,
+      "critical": true,
+      "metadata": {}
+    },
+    "inventory_db": {
+      "id": "inventory_db",
+      "name": "Inventory DB",
+      "type": "database",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 1,
+      "critical": false,
+      "metadata": {}
+    },
+    "user_db": {
+      "id": "user_db",
+      "name": "User DB",
+      "type": "database",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 2,
+      "critical": true,
+      "metadata": {}
+    },
+    "cache": {
+      "id": "cache",
+      "name": "Redis Cache",
+      "type": "cache",
+      "state": "healthy",
+      "capacity": 1.0,
+      "recovery_time": 5,
+      "redundancy": 2,
+      "critical": false,
+      "metadata": {}
+    }
+  },
+  "dependencies": [
+    {
+      "source": "api_gateway",
+      "target": "auth_service",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "api_gateway",
+      "target": "product_service",
+      "strength": 0.8,
+      "optional": false
+    },
+    {
+      "source": "api_gateway",
+      "target": "order_service",
+      "strength": 0.9,
+      "optional": false
+    },
+    {
+      "source": "order_service",
+      "target": "payment_service",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "order_service",
+      "target": "inventory_db",
+      "strength": 1.0,
+      "optional": false
+    },
+    {
+      "source": "product_service",
+      "target": "inventory_db",
+      "strength": 0.9,
+      "optional": false
+    },
+    {
+      "source": "product_service",
+      "target": "cache",
+      "strength": 0.3,
+      "optional": true
+    },
+    {
+      "source": "auth_service",
+      "target": "user_db",
+      "strength": 1.0,
+      "optional": false
+    }
+  ],
+  "metadata": {}
+}
